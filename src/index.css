@@ -1,0 +1,7 @@
+html, body { height: 100%; margin: 0; overflow: hidden; }
+
+.demo-code {
+  margin: 0; padding: 20px 22px; border-radius: 14px; overflow-x: auto; max-width: min(100%, 80ch);
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
+  font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
