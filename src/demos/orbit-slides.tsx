@@ -1,4 +1,4 @@
-import type { OrbitSlide } from "../orbit";
+import type { OrbitSlide } from "../patterns";
 
 export const slides: OrbitSlide[] = [
   {
@@ -39,7 +39,7 @@ export const slides: OrbitSlide[] = [
   },
   {
     id: "editing", title: "Editing pages", color: "#BFE3A0", size: 48,
-    lead: "Every page is one object in src/content/slides.tsx: a title, a color, and either a lead with points or a custom render function.",
+    lead: "Every page is one object in src/demos/orbit-slides.tsx: a title, a color, and either a lead with points or a custom render function.",
     points: [
       { h: "Add a page", t: "Append an object. It’s placed on the next ring automatically." },
       { h: "Reorder", t: "Array order sets ring placement and arrow-key order." },
@@ -74,7 +74,7 @@ export const slides: OrbitSlide[] = [
           React renders the structure, Motion handles the transitions, and a single animation loop moves the nodes.
           This page uses a custom <code>render</code> instead of the built-in layout.
         </p>
-        <pre className="demo-code">{`import { OrbitDeck } from "./orbit";
+        <pre className="demo-code">{`import { OrbitDeck } from "./patterns";
 
 <OrbitDeck
   slides={[

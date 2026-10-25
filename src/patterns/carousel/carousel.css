@@ -1,0 +1,63 @@
+.cr-viewport {
+  position: relative; overflow: hidden; outline: none;
+  perspective: 1400px; transform-style: preserve-3d;
+  user-select: none; -webkit-user-select: none;
+  overscroll-behavior: contain;
+}
+.cr-viewport.is-interactive { cursor: grab; }
+.cr-viewport.is-interactive:active { cursor: grabbing; }
+.cr-viewport:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+/* 3D slides may tilt past the cross-axis edges; clip only along the scroll axis */
+.cr-viewport[data-effect="coverflow"], .cr-viewport[data-effect="ring"] { overflow: visible; overflow-x: clip; }
+.cr-viewport[data-orientation="y"][data-effect="coverflow"],
+.cr-viewport[data-orientation="y"][data-effect="ring"] { overflow: visible; overflow-y: clip; }
+.cr-slide { position: absolute; top: 0; left: 0; will-change: transform; backface-visibility: hidden; }
+.cr-parallax { position: absolute; inset: 0 -20%; }
+.cr-parallax[data-orientation="y"] { inset: -20% 0; }
+.cr-grid { display: grid; height: 100%; grid-template-rows: repeat(var(--rows), minmax(0, 1fr)); }
+.cr-viewport[data-orientation="y"] .cr-grid { grid-template-rows: none; grid-template-columns: repeat(var(--rows), minmax(0, 1fr)); }
+.cr-cell { position: relative; min-width: 0; min-height: 0; }
+
+.cr-btn {
+  width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer; flex: none;
+  display: grid; place-items: center; color: inherit;
+  background: color-mix(in srgb, currentColor 10%, transparent); transition: background .2s ease, opacity .2s ease;
+}
+.cr-btn:hover:not(:disabled) { background: color-mix(in srgb, currentColor 18%, transparent); }
+.cr-btn:disabled { opacity: .3; cursor: default; }
+.cr-btn:focus-visible, .cr-dot:focus-visible, .cr-thumb:focus-visible, .cr-scrubber:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.cr-arrows { display: flex; gap: 10px; }
+
+.cr-dots { display: flex; align-items: center; }
+.cr-dots.is-scaling { overflow: hidden; }
+.cr-dots-row { display: flex; }
+.cr-dot { width: 18px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; flex: none; }
+.cr-dot i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+
+.cr-counter { direction: ltr; display: inline-flex; align-items: baseline; font: 600 15px/1 var(--font-display, system-ui); font-variant-numeric: tabular-nums; }
+.cr-roll { position: relative; display: inline-flex; overflow: hidden; height: 1.2em; align-items: center; }
+.cr-roll > span { display: inline-block; }
+.cr-total { opacity: .5; white-space: pre; }
+
+.cr-scrubber { position: relative; height: 28px; flex: 1; min-width: 120px; cursor: pointer; touch-action: none; border-radius: 99px; }
+.cr-scrubber::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 4px; margin-top: -2px; border-radius: 99px; background: color-mix(in srgb, currentColor 15%, transparent); }
+.cr-scrub-fill { position: absolute; left: 0; top: 50%; height: 4px; margin-top: -2px; border-radius: 99px; background: currentColor; }
+.cr-scrub-handle { position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 18%, transparent); }
+
+.cr-thumbs { display: flex; gap: 10px; overflow-x: auto; padding: 6px; scrollbar-width: none; }
+.cr-thumbs::-webkit-scrollbar { display: none; }
+.cr-thumb { position: relative; flex: none; width: 72px; aspect-ratio: 1; padding: 0; border: 0; border-radius: 12px; cursor: pointer; overflow: visible; background: none; }
+.cr-thumb > :first-child { border-radius: 12px; overflow: hidden; }
+.cr-thumb:not([aria-current]) > :first-child { opacity: .6; transition: opacity .2s ease; }
+.cr-thumb:hover > :first-child { opacity: 1; }
+.cr-thumb-ring { position: absolute; inset: -4px; border-radius: 15px; border: 2px solid currentColor; pointer-events: none; }
+
+.cr-autoplay { display: flex; align-items: center; gap: 14px; }
+.cr-bars { flex: 1; display: flex; gap: 6px; }
+.cr-bar { position: relative; flex: 1; height: 4px; border-radius: 99px; overflow: hidden; background: color-mix(in srgb, currentColor 18%, transparent); }
+.cr-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; background: currentColor; }
+
+.cr-lightbox { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: clamp(16px, 5vw, 64px); }
+.cr-lightbox-scrim { position: absolute; inset: 0; background: rgba(6, 9, 22, .78); }
+.cr-lightbox-panel { position: relative; width: min(100%, 900px); aspect-ratio: 4 / 3; max-height: 100%; border-radius: 20px; overflow: hidden; }
+.cr-lightbox-close { position: absolute; top: 16px; right: 16px; color: #fff; background: rgba(255, 255, 255, .14); }

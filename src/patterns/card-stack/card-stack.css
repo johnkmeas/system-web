@@ -1,0 +1,24 @@
+.cs-root { display: flex; flex-direction: column; align-items: center; gap: 44px; }
+.cs-deck {
+  position: relative; width: min(340px, 82vw); aspect-ratio: 4 / 5;
+  outline: none; border-radius: 22px;
+}
+.cs-deck:focus-visible { outline: 2px solid currentColor; outline-offset: 8px; }
+.cs-card {
+  position: absolute; inset: 0; border-radius: 22px; overflow: hidden;
+  cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+  box-shadow: 0 24px 50px -18px rgba(10, 14, 34, .45);
+}
+.cs-face {
+  position: absolute; inset: 0; padding: 26px;
+  display: flex; flex-direction: column; justify-content: flex-end; color: #141A33;
+}
+.cs-face h3 { font-family: var(--font-display, system-ui); font-size: 2rem; line-height: 1; letter-spacing: -.02em; margin: 0 0 10px; }
+.cs-face p { margin: 0; line-height: 1.5; opacity: .8; }
+.cs-controls { display: flex; gap: 12px; }
+.cs-btn {
+  border: 1.5px solid color-mix(in srgb, currentColor 30%, transparent); background: transparent; color: inherit;
+  border-radius: 999px; padding: 10px 18px; font: inherit; font-weight: 500; cursor: pointer;
+}
+.cs-btn:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+.cs-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }

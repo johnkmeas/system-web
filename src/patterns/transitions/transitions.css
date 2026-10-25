@@ -1,0 +1,4 @@
+.pt-root { position: relative; overflow: hidden; isolation: isolate; }
+.pt-page { position: absolute; inset: 0; overflow: auto; will-change: transform, clip-path, opacity; }
+.pt-strips { position: absolute; inset: 0; z-index: 1000; pointer-events: none; }
+.pt-strip { position: absolute; top: 0; bottom: 0; transform: scaleY(0); }
