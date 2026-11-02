@@ -10,11 +10,13 @@ import { TextDemo } from "./demos/TextDemo";
 import { SliderPlayground } from "./demos/SliderPlayground";
 import { SliderExamples } from "./demos/SliderExamples";
 import { StoreDemo } from "./demos/store/StoreDemo";
+import { PdpPlayground } from "./demos/pdp/PdpPlayground";
 
 const DEMOS: Partial<Record<string, () => ReactNode>> = {
   orbit: () => <OrbitDeck slides={slides} />,
   transitions: () => <TransitionsDemo />,
   store: () => <StoreDemo />,
+  pdp: () => <PdpPlayground />,
   playground: () => <SliderPlayground />,
   sliders: () => <SliderExamples />,
   coverflow: () => <CoverflowDemo />,

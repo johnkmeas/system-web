@@ -59,5 +59,7 @@
 
 .cr-lightbox { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: clamp(16px, 5vw, 64px); }
 .cr-lightbox-scrim { position: absolute; inset: 0; background: rgba(6, 9, 22, .78); }
-.cr-lightbox-panel { position: relative; width: min(100%, 900px); aspect-ratio: 4 / 3; max-height: 100%; border-radius: 20px; overflow: hidden; }
+.cr-lightbox-panel { --lb-ar: 4 / 3; position: relative; width: min(100%, 900px); aspect-ratio: var(--lb-ar); max-height: 100%; border-radius: 20px; overflow: hidden; }
+/* with a numeric ratio, size from both axes so the panel always fits without distortion */
+.cr-lightbox-panel[style*="--lb-ar"] { width: min(100%, 900px, calc((100dvh - 2 * clamp(16px, 5vw, 64px)) * var(--lb-ar))); max-height: none; }
 .cr-lightbox-close { position: absolute; top: 16px; right: 16px; color: #fff; background: rgba(255, 255, 255, .14); }

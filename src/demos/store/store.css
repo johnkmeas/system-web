@@ -401,3 +401,39 @@
   .st-press-track { width: 100%; }
   .st-toolbar { margin: -40px 0 -32px; }
 }
+
+/* Mobile menu drawer */
+.st-burger { display: none; width: 40px; height: 40px; border: 0; background: none; border-radius: 50%; cursor: pointer; place-items: center; margin-left: -8px; }
+.st-burger:hover { background: color-mix(in srgb, var(--s-text) 7%, transparent); }
+.st-menu-scrim { position: absolute; inset: 0; z-index: 40; background: rgba(10, 12, 24, .4); }
+.st-menu {
+  position: absolute; top: 0; left: 0; bottom: 0; z-index: 41; width: min(340px, 86vw);
+  display: flex; flex-direction: column; gap: 8px; overflow-y: auto;
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) 18px 96px;
+  background: var(--s-bg); color: var(--s-text); box-shadow: 20px 0 50px -20px rgba(0, 0, 0, .35);
+}
+.st-menu-head { display: flex; align-items: center; justify-content: space-between; min-height: 44px; }
+.st-menu-x { width: 44px; height: 44px; border: 0; background: none; border-radius: 50%; cursor: pointer; display: grid; place-items: center; }
+.st-menu-x:hover { background: color-mix(in srgb, var(--s-text) 7%, transparent); }
+.st-menu ul { list-style: none; margin: 8px 0 0; padding: 0; }
+.st-menu li { border-bottom: 1px solid var(--s-line); }
+.st-menu li button {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 56px; padding: 0 4px; border: 0; background: none; cursor: pointer; text-align: left;
+  font-family: var(--s-display); font-weight: var(--s-weight); text-transform: var(--s-case); font-size: 1.35rem; letter-spacing: -.01em;
+}
+.st-menu li button span { font-family: var(--s-body); font-size: 1rem; opacity: .5; transition: transform .2s ease; }
+.st-menu li button:hover span { transform: translateX(4px); opacity: 1; }
+.st-menu li button[aria-current="page"] { color: var(--s-accent); }
+.st-burger:focus-visible, .st-menu button:focus-visible { outline: 2px solid var(--s-text); outline-offset: 2px; }
+
+/* Dock vs. the gallery's "All patterns" link: never share the bottom-left corner */
+@media (min-width: 641px) and (max-width: 1099px) {
+  .sd-dock { bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); }
+}
+@media (max-width: 640px) {
+  .st-burger { display: grid; }
+  .sd-dock { left: auto; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); width: auto; }
+  .sd-dock:not(.is-collapsed) { left: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 66px); }
+  .sd-dock .sd-panel { max-height: min(52vh, 460px); }
+}

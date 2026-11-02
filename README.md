@@ -7,12 +7,13 @@ Reusable, motion-driven navigation patterns for React, built on [Motion](https:/
 | Orbit deck | `OrbitDeck` | Pages orbit a home nucleus and open with six orbital transitions (zoom, drawer, eclipse, slingshot, warp, collapse) |
 | Page transitions | `PageTransition` | Circle, diamond, wipe, split, slide, stack, flip, zoom, blur, blinds or fade between keyed pages |
 | Carousel engine | `useCarousel`, `Carousel` + controls | Configurable slider: horizontal/vertical, RTL, loop, snap or free scroll, autoplay, grid rows, 2D effects (slide, fade, scale, parallax, cards) and 3D effects (coverflow, ring); followers sync extra tracks |
+| Media gallery | `MediaGallery` | Product media in seven layouts (thumbnail-synced, side rail, stacked grid with show more, peek slider, coverflow, card deck, orbit ring), a zoom or full-screen lightbox, and hover magnify |
 | Coverflow | `Coverflow` | 3D carousel: drag, flick, click, or ← → Home End |
 | Card stack | `CardStack` | Swipe the top card away; it tucks in at the back |
 | Text effects | `TextEffect`, `RollText`, `RotatingText`, `Typewriter`, `Shimmer`, `Highlight` | Elegant (rise, mask, blur, tracking, fade), slick (flip, wave, drop, hover roll, rotating word, shimmer) and everyday (typewriter, highlight) type motion |
 | Scramble text | `ScrambleText`, `useScramble` | Decode or full-sweep scramble with letter, symbol, binary or block glyphs |
 
-The demo app at `/` is a gallery of all of them, and it uses `PageTransition` itself for route changes. `#/playground` lets you mix and match every slider option (and shows the code for the setup); `#/sliders` has real-world setups including e-commerce galleries, shelves and promo heroes.
+The demo app at `/` is a gallery of all of them, and it uses `PageTransition` itself for route changes. `#/playground` lets you mix and match every slider option (and shows the code for the setup); `#/pdp` is a product page where every pattern (galleries, lightboxes, text effects, page transitions, add-to-cart motion) can be switched live; `#/sliders` has real-world setups including e-commerce galleries, shelves and promo heroes.
 
 `#/store` is a full e-commerce flow (home → collection → product → cart → about/FAQ) in three swappable niches: a t-shirt shop, a supplement store and a health brand. Each one has its own content, fonts and colors. The demo-settings dock has two tabs:
 - **Flow**: niche, page transition (auto picks one per hop), speed, and a guided tour.
@@ -41,6 +42,7 @@ src/
     carousel/          # useCarousel engine, <Carousel> renderer, controls (arrows, dots, counter, scrubber, thumbs, autoplay, lightbox)
     coverflow/         # Coverflow
     card-stack/        # CardStack
+    media-gallery/     # MediaGallery (PDP media layouts + lightboxes)
     text/              # TextEffect, RollText, RotatingText, Typewriter, Shimmer, Highlight
     scramble/          # ScrambleText + useScramble
   gallery/             # gallery shell: hash router + home grid

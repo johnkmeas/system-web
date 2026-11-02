@@ -11,6 +11,7 @@ export const ROUTES: RouteInfo[] = [
   { id: "orbit", title: "Orbit deck", color: "#F4C95D", blurb: "Pages orbit a home nucleus and open with six orbital transitions: zoom, drawer, eclipse, slingshot, warp and collapse." },
   { id: "transitions", title: "Page transitions", color: "#F49AC1", blurb: "Eleven effects behind one component: circle, diamond, wipe, split, slide, stack, flip, zoom, blur, blinds, fade." },
   { id: "store", title: "Store flow", color: "#FF5A36", blurb: "A full storefront, home to product to cart, with real-world page transitions across three niches." },
+  { id: "pdp", title: "PDP playground", color: "#7FD1C7", blurb: "One product page, every motion pattern: seven media galleries, lightboxes, text effects, page transitions and add-to-cart moves." },
   { id: "playground", title: "Slider playground", color: "#C9A7F5", blurb: "One engine, every combination: direction, 2D and 3D effects, grids, loop, autoplay and controls." },
   { id: "sliders", title: "Slider examples", color: "#FFB37C", blurb: "Product gallery, shelf, promo hero, synced text, grid, vertical, 3D ring, stories, RTL." },
   { id: "coverflow", title: "Coverflow", color: "#9FB4FF", blurb: "A 3D carousel you can drag, flick, click or drive with the keyboard." },

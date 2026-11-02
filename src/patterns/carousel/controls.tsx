@@ -119,7 +119,12 @@ export function CarouselThumbs<T>({ api, items, renderThumb, className }: {
   useEffect(() => {
     const el = strip.current, btn = el?.children[api.index] as HTMLElement | undefined;
     if (!el || !btn) return;
-    el.scrollTo({ left: btn.offsetLeft - (el.clientWidth - btn.clientWidth) / 2, behavior: "smooth" });
+    // works for a horizontal strip or a vertical rail
+    el.scrollTo({
+      left: btn.offsetLeft - (el.clientWidth - btn.clientWidth) / 2,
+      top: btn.offsetTop - (el.clientHeight - btn.clientHeight) / 2,
+      behavior: "smooth",
+    });
   }, [api.index]);
   return (
     <div ref={strip} className={"cr-thumbs" + (className ? " " + className : "")}>
@@ -158,8 +163,10 @@ export function CarouselAutoplay({ api, style }: { api: CarouselApi; style?: CSS
 }
 
 /** Full-screen view of one item, zooming out of the slide that shares its `layoutId`. */
-export function Lightbox({ layoutId, onClose, children, label = "Image viewer" }: {
+export function Lightbox({ layoutId, onClose, children, label = "Image viewer", aspect }: {
   layoutId: string; onClose: () => void; children: ReactNode; label?: string;
+  /** Width ÷ height of the content. The panel takes this shape and fits the screen, so nothing stretches. */
+  aspect?: number;
 }) {
   const close = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -172,7 +179,8 @@ export function Lightbox({ layoutId, onClose, children, label = "Image viewer" }
     <div className="cr-lightbox" role="dialog" aria-modal="true" aria-label={label}>
       <motion.div className="cr-lightbox-scrim" onClick={onClose}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
-      <motion.div layoutId={layoutId} className="cr-lightbox-panel" transition={{ type: "spring", stiffness: 260, damping: 30 }}>
+      <motion.div layoutId={layoutId} className="cr-lightbox-panel"
+        style={aspect ? ({ "--lb-ar": aspect } as CSSProperties) : undefined} transition={{ type: "spring", stiffness: 260, damping: 30 }}>
         {children}
       </motion.div>
       <motion.button ref={close} className="cr-btn cr-lightbox-close" aria-label="Close" onClick={onClose}

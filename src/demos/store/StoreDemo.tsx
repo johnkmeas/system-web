@@ -151,6 +151,8 @@ function Store({ niche: id, choice, duration, route, setRoute, touring }: {
   const [dir, setDir] = useState<1 | -1>(1);
   const [origin, setOrigin] = useState<{ x: number; y: number } | null>(null);
   const [toast, setToast] = useState<{ name: string; n: number } | null>(null);
+  const [menu, setMenu] = useState(false);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const routeRef = useRef(route);
   routeRef.current = route;
@@ -194,6 +196,15 @@ function Store({ niche: id, choice, duration, route, setRoute, touring }: {
     return () => clearTimeout(t);
   }, [toast]);
 
+  // Mobile menu: Esc closes it and focus goes back to the burger.
+  useEffect(() => {
+    if (!menu) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenu(false); };
+    window.addEventListener("keydown", onKey);
+    return () => { window.removeEventListener("keydown", onKey); menuBtnRef.current?.focus({ preventScroll: true }); };
+  }, [menu]);
+  const menuNav = (to: Route, e: MouseEvent) => { setMenu(false); nav(to, e); };
+
   const ctx: StoreCtx = { niche: n, nav, cart, addToCart, setQty };
   const count = cart.reduce((s, l) => s + l.qty, 0);
   const th = n.theme;
@@ -207,6 +218,10 @@ function Store({ niche: id, choice, duration, route, setRoute, touring }: {
     <div className="st-site" style={themeVars} data-niche={id}>
       <div className="st-announce">{n.announcement}</div>
       <header className="st-header">
+        <button className="st-burger" ref={menuBtnRef} aria-label="Open menu" aria-expanded={menu}
+          onClick={() => setMenu(true)}>
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+        </button>
         <button className="st-logo" onClick={e => nav({ page: "home" }, e)}>{n.brand}</button>
         <nav className="st-nav" aria-label="Main">
           {n.collections.map(c => (
@@ -243,6 +258,37 @@ function Store({ niche: id, choice, duration, route, setRoute, touring }: {
       </div>
 
       <AnimatePresence>
+        {menu && (
+          <motion.div key="scrim" className="st-menu-scrim" onClick={() => setMenu(false)}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} />
+        )}
+        {menu && (
+          <motion.nav key="menu" className="st-menu" aria-label="Menu"
+            initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
+            transition={{ type: "spring", stiffness: 380, damping: 38 }}>
+            <div className="st-menu-head">
+              <span className="st-logo">{n.brand}</span>
+              <button className="st-menu-x" aria-label="Close menu" autoFocus onClick={() => setMenu(false)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /></svg>
+              </button>
+            </div>
+            <motion.ul initial="hidden" animate="show"
+              variants={{ show: { transition: { staggerChildren: 0.05, delayChildren: 0.08 } } }}>
+              {([
+                ["Home", { page: "home" }],
+                ...n.collections.map(c => [c.name, { page: "collection", id: c.id }] as [string, Route]),
+                ["About", { page: "about" }], ["Help", { page: "faq" }],
+                [`Cart${count ? ` (${count})` : ""}`, { page: "cart" }],
+              ] as [string, Route][]).map(([label, to]) => (
+                <motion.li key={label} variants={{ hidden: { opacity: 0, x: -24 }, show: { opacity: 1, x: 0 } }}>
+                  <button aria-current={keyOf(to) === keyOf(route) ? "page" : undefined} onClick={e => menuNav(to, e)}>
+                    {label}<span aria-hidden="true">→</span>
+                  </button>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.nav>
+        )}
         {toast && (
           <motion.div key={toast.n} className="st-toast" role="status"
             initial={{ y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -16, opacity: 0 }}>

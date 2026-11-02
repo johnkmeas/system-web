@@ -7,3 +7,4 @@ export {
 } from "./scramble/ScrambleText";
 export * from "./text";
 export * from "./carousel";
+export * from "./media-gallery";
