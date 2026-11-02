@@ -1,5 +1,6 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import { motion } from "motion/react";
+import { TRANSITIONS } from "./transitions";
 import type { Layout, OrbitSettings, ResolvedSlide, Theme } from "./types";
 
 type BoolKey = { [K in keyof OrbitSettings]: OrbitSettings[K] extends boolean ? K : never }[keyof OrbitSettings];
@@ -54,6 +55,16 @@ export function SettingsDrawer({ slides, settings, set, onClose, onResetView, on
           value={settings.speed} onChange={e => set("speed", parseFloat(e.target.value))} />
         {toggle("paused", "Pause orbits")}
         {toggle("autoRotate", "Auto-rotate view")}
+      </section>
+
+      <section>
+        <h3>Page transition</h3>
+        <div className="od-seg is-grid" role="group" aria-label="Page transition">
+          {TRANSITIONS.map(t => (
+            <button key={t.id} aria-pressed={settings.transition === t.id} onClick={() => set("transition", t.id)}>{t.label}</button>
+          ))}
+        </div>
+        <p className="od-note" aria-live="polite">{TRANSITIONS.find(t => t.id === settings.transition)?.blurb}</p>
       </section>
 
       <section>

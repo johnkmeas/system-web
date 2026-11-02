@@ -52,6 +52,7 @@ export interface OrbitTarget extends Orbital {
 
 export type Layout = "atom" | "solar" | "flat";
 export type Theme = "system" | "light" | "dark";
+export type TransitionMode = "zoom" | "drawer" | "eclipse" | "slingshot" | "warp" | "collapse";
 
 export interface OrbitSettings {
   speed: number;
@@ -64,6 +65,8 @@ export interface OrbitSettings {
   layout: Layout;
   randomness: number;
   seed: number;
+  /** How a page opens from its node. */
+  transition: TransitionMode;
 }
 
 export interface Camera {

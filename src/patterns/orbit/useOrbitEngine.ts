@@ -2,6 +2,7 @@ import { useEffect, type RefObject } from "react";
 import type { MotionValue } from "motion/react";
 import { clamp, project, targetsFor, TAU } from "./math";
 import { createFlatSim } from "./physics";
+import { applyTransition, resetTransition } from "./transitions";
 import type { Camera, NodePos, Orbital, OrbitSettings, OrbitTarget, ResolvedSlide } from "./types";
 
 export interface OrbitEngineOptions {
@@ -12,6 +13,8 @@ export interface OrbitEngineOptions {
   frontRef: RefObject<SVGPathElement | null>;
   stageRef: RefObject<HTMLDivElement | null>;
   overlayRef: RefObject<HTMLDivElement | null>;
+  /** Holds the transition effect layers (corona, warp streaks). */
+  fxRef: RefObject<HTMLDivElement | null>;
   trackRef: RefObject<number | null>;
   posRef: RefObject<NodePos[]>;
   settingsRef: RefObject<OrbitSettings>;
@@ -32,7 +35,7 @@ export function useOrbitEngine(opts: OrbitEngineOptions) {
 
   useEffect(() => {
     const {
-      nodeRefs, backRef, frontRef, stageRef, overlayRef, trackRef,
+      nodeRefs, backRef, frontRef, stageRef, overlayRef, fxRef, trackRef,
       posRef, settingsRef, reducedRef, dragRef, cam, progress,
     } = opts;
     const n = slides.length;
@@ -45,11 +48,11 @@ export function useOrbitEngine(opts: OrbitEngineOptions) {
     const sizes: number[] = [];
     const rad: number[] = []; // body radius per node, layout units
     const sim = createFlatSim(n);
-    let flatF = 0, flatInit = false;
+    let flatF = 0, flatInit = false, fxOn = false;
 
+    const maxR = 450; // fixed so nodes keep their size when the arrangement changes
     function layout() {
       W = window.innerWidth; H = window.innerHeight;
-      const maxR = 450; // fixed so nodes keep their size when the arrangement changes
       unit = Math.min(W / (maxR * 2 + (W < 600 ? 90 : 160)), H / (maxR * 2 + 260));
       cx = W / 2; cy = H / 2;
       dirty = true;
@@ -88,14 +91,16 @@ export function useOrbitEngine(opts: OrbitEngineOptions) {
         ang[i] += dt * gs * o.speed;
       }
       const pr = progress.get();
+      // The drawer keeps the orbit on screen; every other transition covers it.
+      const drawer = S.transition === "drawer";
       // Fully covered by a page: keep computing positions, skip DOM writes.
-      const hidden = pr >= 0.999 && !dirty;
+      const hidden = pr >= 0.999 && !dirty && !drawer;
       const c = cam.current;
       const flat = S.layout === "flat";
       if (flat) { c.yawT = 0; c.tiltT = 0; }
       flatF += ((flat ? 1 : 0) - flatF) * ease;
       if (Math.abs((flat ? 1 : 0) - flatF) < 0.002) flatF = flat ? 1 : 0;
-      if (S.autoRotate && !flat && !S.paused && !dragRef.current && pr === 0) c.yawT += dt * 0.12 * S.speed;
+      if (S.autoRotate && !flat && !S.paused && !dragRef.current && (pr === 0 || drawer)) c.yawT += dt * 0.12 * S.speed;
       c.yaw += (c.yawT - c.yaw) * 0.1;
       c.tilt += (c.tiltT - c.tilt) * 0.1;
       const tilt = clamp(c.tilt, -1.3, 1.3);
@@ -169,26 +174,24 @@ export function useOrbitEngine(opts: OrbitEngineOptions) {
       if (!hidden && frontRef.current) frontRef.current.setAttribute("d", front);
       dirty = false;
 
-      // Zoom transition, driven by progress (0 = orbit, 1 = page) and the tracked
+      // Page transition, driven by progress (0 = orbit, 1 = page) and the tracked
       // node's live position this frame.
-      const st = stageRef.current, ov = overlayRef.current, ti = trackRef.current;
+      const st = stageRef.current, ti = trackRef.current;
       if (st) {
-        if (pr >= 0.999) {
-          if (ov && ov.style.clipPath !== "none") ov.style.clipPath = "none";
-          st.style.opacity = "0";
-        } else if (pr > 0.0005 && ti !== null && pos[ti]) {
-          const q = pos[ti], sc = 1 + 2.4 * pr;
-          st.style.transformOrigin = `${q.x}px ${q.y}px`;
-          st.style.transform = `scale(${sc})`;
-          st.style.opacity = String(1 - pr);
-          if (ov) {
-            const R = Math.hypot(Math.max(q.x, W - q.x), Math.max(q.y, H - q.y)) + 40;
-            const r0 = q.r * sc;
-            const r = r0 + (R - r0) * pr;
-            ov.style.clipPath = `circle(${r.toFixed(1)}px at ${q.x.toFixed(1)}px ${q.y.toFixed(1)}px)`;
-          }
-        } else if (st.style.transform) {
-          st.style.transform = ""; st.style.opacity = ""; st.style.transformOrigin = "";
+        const fx = fxRef.current;
+        const corona = (fx?.children[0] as HTMLElement | undefined) ?? null;
+        const warp = (fx?.children[1] as HTMLElement | undefined) ?? null;
+        if (pr > 0.0005 && ti !== null && pos[ti]) {
+          fxOn = true;
+          applyTransition(S.transition, {
+            pr, W, H, cx, cy,
+            extW: (maxR * 2 + 140) * unit, extH: (maxR * 2 + 160) * unit,
+            q: pos[ti], sun: pos[0], color: slides[ti].color, sunColor: slides[0].color,
+            st, ov: overlayRef.current, corona, warp,
+          });
+        } else if (fxOn) {
+          fxOn = false;
+          resetTransition(st, corona, warp);
         }
       }
       raf = requestAnimationFrame(frame);

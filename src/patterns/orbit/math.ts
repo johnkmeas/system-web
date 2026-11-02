@@ -10,7 +10,7 @@ export const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a
 
 export const DEFAULT_SETTINGS: OrbitSettings = {
   speed: 1, paused: false, autoRotate: false, rings: true, labels: true, stars: true, theme: "system",
-  layout: "atom", randomness: 0.45, seed: 7,
+  layout: "atom", randomness: 0.45, seed: 7, transition: "zoom",
 };
 
 /* Atom-style orbitals: rings of equal size, each tilted away from the viewer

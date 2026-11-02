@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { animate, AnimatePresence, motion, MotionConfig, useMotionValue, type AnimationPlaybackControls } from "motion/react";
-import { DEFAULT_ORBITALS, DUR, EASE, resolveSlides } from "./math";
+import { DEFAULT_ORBITALS, EASE, resolveSlides } from "./math";
+import { DRAWER_WIDE, transitionDuration } from "./transitions";
 import { OrbitView } from "./OrbitView";
 import { PageView } from "./PageView";
 import { SettingsDrawer } from "./SettingsDrawer";
@@ -23,7 +24,10 @@ export interface OrbitDeckProps {
   className?: string;
 }
 
-const PAGE_START: CSSProperties = { clipPath: "circle(0px at -200px -200px)" };
+// First paint before the engine's next frame takes over.
+const pageStart = (drawer: boolean): CSSProperties => !drawer
+  ? { clipPath: "circle(0px at -200px -200px)" }
+  : { transform: window.innerWidth >= DRAWER_WIDE ? "translate3d(100%, 0, 0)" : "translate3d(0, 100%, 0)" };
 const prefersReduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export function OrbitDeck({
@@ -50,6 +54,7 @@ export function OrbitDeck({
   const trackRef = useRef<number | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const fxRef = useRef<HTMLDivElement>(null);
   const backBtnRef = useRef<HTMLButtonElement>(null);
   const layerRef = useRef(1);
   const closingRef = useRef(false);
@@ -61,7 +66,10 @@ export function OrbitDeck({
 
   const runTo = useCallback((v: number) => {
     anim.current?.stop();
-    anim.current = animate(progress, v, { duration: prefersReduced() ? 0.3 : DUR, ease: EASE });
+    anim.current = animate(progress, v, {
+      duration: prefersReduced() ? 0.3 : transitionDuration(settingsRef.current.transition),
+      ease: EASE,
+    });
     return anim.current;
   }, [progress]);
 
@@ -151,6 +159,16 @@ export function OrbitDeck({
     if (i !== null) rootRef.current?.querySelector<HTMLElement>(`[data-node="${i}"]`)?.focus({ preventScroll: true });
   }, [open]);
 
+  const drawer = settings.transition === "drawer";
+  // In drawer mode the orbit stays live: clicking another node swaps the page.
+  const onNode = useCallback((i: number) => {
+    if (active !== null && drawer && !closingRef.current) {
+      if (i !== active) go(i, i > active ? 1 : -1);
+      return;
+    }
+    openPage(i);
+  }, [active, drawer, go, openPage]);
+
   const resetView = () => { camRef.current.yawT = 0; camRef.current.tiltT = 0; };
   const color = slides[active ?? lastIndex.current ?? 0].color;
 
@@ -162,10 +180,16 @@ export function OrbitDeck({
         data-theme={settings.theme === "system" ? undefined : settings.theme}>
         {settings.stars && <Stars />}
 
-        <div className="od-stage" ref={stageRef} inert={open} aria-hidden={open || undefined}>
+        <div className="od-stage" ref={stageRef} inert={open && !drawer} aria-hidden={(open && !drawer) || undefined}>
           <OrbitView slides={slides} orbitals={orbitals} settings={settings} settingsRef={settingsRef}
             progress={progress} posRef={posRef} trackRef={trackRef}
-            stageRef={stageRef} overlayRef={overlayRef} cam={camRef} onOpen={openPage} />
+            stageRef={stageRef} overlayRef={overlayRef} fxRef={fxRef} cam={camRef}
+            current={open && drawer ? active : null} onOpen={onNode} />
+        </div>
+
+        <div className="od-fx" ref={fxRef} aria-hidden="true">
+          <div className="od-corona" />
+          <div className="od-warp" />
         </div>
 
         {showSettings && !open && (
@@ -199,8 +223,8 @@ export function OrbitDeck({
         </motion.p>
 
         {open && (
-          <div className="od-page" ref={overlayRef} role="dialog" aria-modal="true"
-            aria-labelledby="od-page-title" style={PAGE_START}>
+          <div className={"od-page" + (drawer ? " is-drawer" : "")} ref={overlayRef} role="dialog"
+            aria-modal={!drawer} aria-labelledby="od-page-title" style={pageStart(drawer)}>
             <div className="od-page-bgs" aria-hidden="true">
               <AnimatePresence initial={false}>
                 <motion.div
@@ -214,7 +238,8 @@ export function OrbitDeck({
               </AnimatePresence>
             </div>
             <div className="od-page-scroll">
-              <PageView slides={slides} index={active} nav={nav} onClose={close} onGo={go} backBtnRef={backBtnRef} />
+              <PageView slides={slides} index={active} nav={nav} onClose={close} onGo={go} backBtnRef={backBtnRef}
+                closeLabel={drawer ? "Close" : "Back to orbit"} />
             </div>
           </div>
         )}

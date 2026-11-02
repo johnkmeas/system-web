@@ -14,6 +14,9 @@ interface OrbitViewProps {
   trackRef: RefObject<number | null>;
   stageRef: RefObject<HTMLDivElement | null>;
   overlayRef: RefObject<HTMLDivElement | null>;
+  fxRef: RefObject<HTMLDivElement | null>;
+  /** Node whose page is showing beside the orbit (drawer mode), highlighted. */
+  current: number | null;
   cam: RefObject<Camera>;
   onOpen: (index: number) => void;
 }
@@ -21,7 +24,7 @@ interface OrbitViewProps {
 type DragState = { x: number; y: number; yaw: number; tilt: number };
 
 export function OrbitView({
-  slides, orbitals, settings, settingsRef, progress, posRef, trackRef, stageRef, overlayRef, cam, onOpen,
+  slides, orbitals, settings, settingsRef, progress, posRef, trackRef, stageRef, overlayRef, fxRef, cam, onOpen, current,
 }: OrbitViewProps) {
   const reduced = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -35,12 +38,13 @@ export function OrbitView({
   useEffect(() => { reducedRef.current = !!reduced; }, [reduced]);
 
   useOrbitEngine({
-    slides, orbitals, nodeRefs, backRef, frontRef, stageRef, overlayRef, trackRef,
+    slides, orbitals, nodeRefs, backRef, frontRef, stageRef, overlayRef, fxRef, trackRef,
     posRef, settingsRef, reducedRef, dragRef: drag, cam, progress,
   });
 
   const onPointerDown = (e: React.PointerEvent) => {
-    if (progress.get() > 0 || e.button > 0 || settingsRef.current.layout === "flat") return;
+    const drawer = settingsRef.current.transition === "drawer";
+    if ((progress.get() > 0 && !drawer) || e.button > 0 || settingsRef.current.layout === "flat") return;
     moved.current = false;
     drag.current = { x: e.clientX, y: e.clientY, yaw: cam.current.yawT, tilt: cam.current.tiltT };
     const move = (ev: PointerEvent) => {
@@ -78,7 +82,8 @@ export function OrbitView({
           key={s.id}
           data-node={i}
           ref={el => { nodeRefs.current[i] = el; }}
-          className={"od-node" + (i === 0 ? " is-sun" : "")}
+          className={"od-node" + (i === 0 ? " is-sun" : "") + (i === current ? " is-current" : "")}
+          aria-current={i === current ? "page" : undefined}
           style={{ "--c": s.color } as React.CSSProperties}
           aria-label={"Open " + s.title}
           onClick={() => click(i)}>

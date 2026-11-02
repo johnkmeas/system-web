@@ -245,3 +245,55 @@
   .od-back kbd { display: none; }
   .od-lead { margin-bottom: 1.8em; }
 }
+
+/* Transition picker */
+.od-seg.is-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; border-radius: 16px; }
+.od-seg.is-grid button { border-radius: 13px; }
+.od-note { margin: 10px 2px 0; font-size: 13.5px; line-height: 1.45; color: var(--muted); min-height: 3em; }
+
+/* Transition effect layers: under the page, over the orbit */
+.od-fx { position: fixed; inset: 0; z-index: 9; pointer-events: none; overflow: hidden; }
+.od-corona {
+  display: none; position: absolute; left: 0; top: 0; border-radius: 50%;
+  will-change: transform, opacity;
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--fx) 90%, white),
+    0 0 26px 8px var(--fx),
+    0 0 90px 34px color-mix(in srgb, var(--fx) 45%, transparent);
+}
+.od-warp {
+  display: none; position: absolute; inset: 0; will-change: opacity;
+  --streak: color-mix(in srgb, var(--text) 55%, transparent);
+  background:
+    repeating-conic-gradient(from 0deg at var(--wx, 50%) var(--wy, 50%), var(--streak) 0 .35deg, transparent .35deg 7deg),
+    repeating-conic-gradient(from 3deg at var(--wx, 50%) var(--wy, 50%), var(--streak) 0 .2deg, transparent .2deg 11deg);
+  -webkit-mask-image: radial-gradient(circle at var(--wx, 50%) var(--wy, 50%), transparent var(--wr, 40px), #000 calc(var(--wr, 40px) + 35vmax));
+  mask-image: radial-gradient(circle at var(--wx, 50%) var(--wy, 50%), transparent var(--wr, 40px), #000 calc(var(--wr, 40px) + 35vmax));
+}
+
+/* Page type scales with the page's own width, so it reads in a half-width drawer too */
+.od-page-scroll { container-type: inline-size; }
+.od-content h1 { font-size: clamp(2.1rem, 7cqi, 6rem); }
+.od-lead { font-size: clamp(1.05rem, 1.55cqi + .4rem, 1.38rem); }
+
+/* Drawer: right half on wide screens, bottom sheet on narrow ones */
+.od-page.is-drawer {
+  left: 50%;
+  box-shadow: -1px 0 0 var(--ring-front), -24px 0 60px rgba(8, 12, 32, .22);
+}
+.od-node.is-current { outline: 2px solid var(--c); outline-offset: 6px; animation: od-pulse 2.2s ease-in-out infinite; }
+@keyframes od-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 55%, transparent); }
+  50% { box-shadow: 0 0 0 14px color-mix(in srgb, var(--c) 0%, transparent); }
+}
+@media (max-width: 899px) {
+  .od-page.is-drawer {
+    left: 0; top: 42%;
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -1px 0 var(--ring-front), 0 -20px 50px rgba(8, 12, 32, .22);
+  }
+  .od-page.is-drawer .od-page-bgs { border-radius: inherit; overflow: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .od-node.is-current { animation: none; }
+}

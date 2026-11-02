@@ -49,9 +49,10 @@ interface PageViewProps {
   onClose: () => void;
   onGo: (index: number, dir: 1 | -1) => void;
   backBtnRef: Ref<HTMLButtonElement>;
+  closeLabel?: string;
 }
 
-export function PageView({ slides, index, nav, onClose, onGo, backBtnRef }: PageViewProps) {
+export function PageView({ slides, index, nav, onClose, onGo, backBtnRef, closeLabel = "Back to orbit" }: PageViewProps) {
   const s = slides[index];
   const n = slides.length;
   const ctx: SlideRenderContext = { index, slides, go: (i, dir) => onGo(i, dir ?? (i > index ? 1 : -1)), close: onClose };
@@ -60,7 +61,7 @@ export function PageView({ slides, index, nav, onClose, onGo, backBtnRef }: Page
     <div className="od-page-inner">
       <header className="od-page-top">
         <button className="od-back" ref={backBtnRef} onClick={onClose}>
-          <Chevron left /> Back to orbit <kbd>Esc</kbd>
+          <Chevron left /> {closeLabel} <kbd>Esc</kbd>
         </button>
         <span className="od-count">{index + 1} of {n}</span>
       </header>

@@ -29,12 +29,15 @@ export const slides: OrbitSlide[] = [
     ],
   },
   {
-    id: "transitions", title: "The zoom", color: "#F49AC1", size: 86,
-    lead: "Opening a page is a camera move. The orbit scales toward the node you picked while a circle in that node’s color grows from its exact position until it covers the screen.",
+    id: "transitions", title: "Transitions", color: "#F49AC1", size: 86,
+    lead: "Opening a page is a camera move, and there are six to choose from in the settings menu. Each one tracks the node’s live position, so closing plays it backwards and lands on the node you’re reading.",
     points: [
-      { h: "Zoom in", t: "The circle tracks the node’s live position, so it starts precisely on the node." },
-      { h: "Zoom out", t: "The same animation in reverse lands back on the node you’re currently reading." },
-      { h: "Page to page", t: "Content slides sideways and the background blends into the next node’s color." },
+      { h: "Zoom", t: "The camera dives into the node while a circle in its color grows to fill the screen." },
+      { h: "Drawer", t: "The page slides in beside the orbit, which pulls back so the whole system stays in view. Click other nodes to switch pages." },
+      { h: "Eclipse", t: "The node glides in front of the nucleus, the corona flares, then the page swallows the sky." },
+      { h: "Slingshot", t: "The node whips around the nucleus on a gravity assist and flings open into the page." },
+      { h: "Warp", t: "Stars streak past as you jump to light speed toward the node." },
+      { h: "Collapse", t: "The system spirals into the nucleus like a black hole, and the page bursts out as a shockwave." },
     ],
   },
   {

@@ -4,12 +4,13 @@ Reusable, motion-driven navigation patterns for React, built on [Motion](https:/
 
 | Pattern | Component | What it does |
 |---|---|---|
-| Orbit deck | `OrbitDeck` | Pages orbit a home nucleus and open with a zoom-and-reveal camera move |
+| Orbit deck | `OrbitDeck` | Pages orbit a home nucleus and open with six orbital transitions (zoom, drawer, eclipse, slingshot, warp, collapse) |
 | Page transitions | `PageTransition` | Circle, diamond, wipe, split, slide, stack, flip, zoom, blur, blinds or fade between keyed pages |
 | Carousel engine | `useCarousel`, `Carousel` + controls | Configurable slider: horizontal/vertical, RTL, loop, snap or free scroll, autoplay, grid rows, 2D effects (slide, fade, scale, parallax, cards) and 3D effects (coverflow, ring); followers sync extra tracks |
 | Coverflow | `Coverflow` | 3D carousel: drag, flick, click, or ← → Home End |
 | Card stack | `CardStack` | Swipe the top card away; it tucks in at the back |
-| Scramble text | `ScrambleText`, `useScramble` | Text that resolves out of random glyphs |
+| Text effects | `TextEffect`, `RollText`, `RotatingText`, `Typewriter`, `Shimmer`, `Highlight` | Elegant (rise, mask, blur, tracking, fade), slick (flip, wave, drop, hover roll, rotating word, shimmer) and everyday (typewriter, highlight) type motion |
+| Scramble text | `ScrambleText`, `useScramble` | Decode or full-sweep scramble with letter, symbol, binary or block glyphs |
 
 The demo app at `/` is a gallery of all of them, and it uses `PageTransition` itself for route changes. `#/playground` lets you mix and match every slider option (and shows the code for the setup); `#/sliders` has real-world setups including e-commerce galleries, shelves and promo heroes.
 
@@ -40,6 +41,7 @@ src/
     carousel/          # useCarousel engine, <Carousel> renderer, controls (arrows, dots, counter, scrubber, thumbs, autoplay, lightbox)
     coverflow/         # Coverflow
     card-stack/        # CardStack
+    text/              # TextEffect, RollText, RotatingText, Typewriter, Shimmer, Highlight
     scramble/          # ScrambleText + useScramble
   gallery/             # gallery shell: hash router + home grid
   demos/               # one demo page per pattern, plus orbit deck content
@@ -68,7 +70,7 @@ const api = useCarousel({ count: items.length, loop: true, autoplay: 4000 });
 
 <ScrambleText as="h1" text="Hello" replay={hoverCount} />
 
-<OrbitDeck slides={slides} defaultSettings={{ layout: "solar" }} />
+<OrbitDeck slides={slides} defaultSettings={{ layout: "solar", transition: "drawer" }} />
 ```
 
 Each component accepts a `renderItem` / `render` prop where it makes sense, so the visuals are yours and the motion comes from the pattern. See `src/demos/` for complete examples.
