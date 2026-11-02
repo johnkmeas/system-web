@@ -6,7 +6,7 @@ import { slides } from "./demos/orbit-slides";
 import { TransitionsDemo } from "./demos/TransitionsDemo";
 import { CoverflowDemo } from "./demos/CoverflowDemo";
 import { StackDemo } from "./demos/StackDemo";
-import { ScrambleDemo } from "./demos/ScrambleDemo";
+import { TextDemo } from "./demos/TextDemo";
 import { SliderPlayground } from "./demos/SliderPlayground";
 import { SliderExamples } from "./demos/SliderExamples";
 import { StoreDemo } from "./demos/store/StoreDemo";
@@ -19,7 +19,8 @@ const DEMOS: Partial<Record<string, () => ReactNode>> = {
   sliders: () => <SliderExamples />,
   coverflow: () => <CoverflowDemo />,
   stack: () => <StackDemo />,
-  scramble: () => <ScrambleDemo />,
+  text: () => <TextDemo />,
+  scramble: () => <TextDemo />, // old link
 };
 
 export function App() {

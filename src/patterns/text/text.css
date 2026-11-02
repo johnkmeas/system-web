@@ -1,0 +1,41 @@
+.tx-piece { display: inline-block; white-space: pre; will-change: transform, opacity; }
+.tx-word { display: inline-block; white-space: nowrap; }
+/* Clip box for the mask effect; a little bottom padding keeps descenders */
+.tx-mask { display: inline-block; overflow: clip; vertical-align: bottom; padding-bottom: .08em; margin-bottom: -.08em; }
+
+/* Roll: each letter stacks a copy below itself and rolls up on hover */
+.tx-roll { display: inline-block; overflow: clip; vertical-align: bottom; line-height: 1.15; }
+.tx-roll-char { position: relative; display: inline-block; white-space: pre;
+  transition: transform .45s cubic-bezier(.65, 0, .35, 1) calc(var(--i) * var(--d)); }
+.tx-roll-char::after { content: attr(data-c); position: absolute; left: 0; top: 100%; }
+.tx-roll:hover .tx-roll-char, .tx-roll-host:hover .tx-roll-char, .tx-roll-host:focus-visible .tx-roll-char { transform: translateY(-100%); }
+
+.tx-rotate { display: inline-flex; overflow: clip; vertical-align: bottom; padding-bottom: .08em; margin-bottom: -.08em; }
+.tx-rotate-word { display: inline-flex; white-space: pre; }
+
+.tx-type { white-space: pre-wrap; }
+.tx-caret { display: inline-block; width: .08em; min-width: 2px; height: 1em; margin-left: .06em; vertical-align: -.1em;
+  background: currentColor; animation: tx-blink 1s steps(1) infinite; }
+@keyframes tx-blink { 50% { opacity: 0; } }
+
+.tx-shimmer {
+  --shine: color-mix(in srgb, currentColor 25%, white);
+  background: linear-gradient(110deg, currentColor 35%, var(--shine) 50%, currentColor 65%) 0 0 / 250% 100%;
+  /* currentColor stays the real text color; only the fill is swapped for the gradient */
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  animation: tx-shimmer var(--dur, 2.4s) linear infinite;
+}
+@keyframes tx-shimmer { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+
+.tx-hl { position: relative; display: inline-block; isolation: isolate; }
+.tx-hl-mark { position: absolute; left: -.08em; right: -.08em; bottom: .06em; height: .42em; z-index: -1; transform-origin: left;
+  border-radius: .12em; background: color-mix(in srgb, currentColor 22%, transparent); }
+
+.tx-scramble-live { opacity: .55; }
+.tx-scramble-rest { visibility: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-roll-char { transition: none; }
+  .tx-shimmer { animation: none; }
+  .tx-caret { animation: none; }
+}
