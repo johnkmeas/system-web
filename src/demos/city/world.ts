@@ -478,7 +478,10 @@ const FORMS: Record<Form, Tier[]> = {
     { kind: "box", w: 16, h: 22, d: 16, y: 0 }, { kind: "box", w: 12, h: 14, d: 12, y: 22 }, { kind: "box", w: 8, h: 10, d: 8, y: 36, cap: true },
   ],
   spire: [{ kind: "box", w: 10, h: 46, d: 10, y: 0, cap: true }],
-  cylinder: [{ kind: "cyl", r: 8, h: 36, y: 0, seg: 32, cap: true }],
+  hospital: [{ kind: "box", w: 20, h: 10, d: 18, y: 0 }, { kind: "box", w: 11, h: 26, d: 11, y: 0, cap: true }],
+  library: [{ kind: "box", w: 20, h: 12, d: 14, y: 0 }, { kind: "box", w: 14, h: 10, d: 10, y: 12, cap: true }],
+  gallery: [{ kind: "box", w: 18, h: 12, d: 16, y: 0 }, { kind: "box", w: 13, h: 10, d: 13, y: 12, rot: 0.5, cap: true }],
+  observatory: [{ kind: "box", w: 18, h: 8, d: 18, y: 0 }, { kind: "cyl", r: 7, h: 14, y: 8, seg: 24 }],
   datacenter: [{ kind: "box", w: 18, h: 14, d: 14, y: 0 }, { kind: "box", w: 8, h: 22, d: 8, y: 0, x: -5, cap: true }],
   twist: Array.from({ length: 7 }, (_, i) => ({ kind: "box" as const, w: 10, h: 6, d: 10, y: i * 6, rot: i * 0.16, cap: i === 6 })),
   hub: [
@@ -590,7 +593,7 @@ function buildHero(c: Ctx, d: District, pickables: THREE.Object3D[]): Hero {
       // Bands up the drum
       const bandMat = style === "medieval" || stone ? stoneDark : style === "farm" ? kit.solid(night ? "#3A3E44" : "#8A9098", { metal: 0.1, rough: 0.4 }) : accent;
       const thick = style === "gummy" ? 0.7 : style === "farm" ? 0.18 : 0.32;
-      const ringsAt = d.form === "cylinder" ? [9, 18, 27, 36] : [yTop];
+      const ringsAt = [yTop];
       for (const y of ringsAt) {
         if (y > yTop) continue;
         const ring = new THREE.Mesh(new THREE.TorusGeometry(t.r + 0.15, thick, 8, seg), bandMat);
@@ -653,14 +656,6 @@ function buildHero(c: Ctx, d: District, pickables: THREE.Object3D[]): Hero {
     const ant = add(new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.5, 10, 8), kit.roofMat));
     ant.position.y = top + 5; mark(top + 10);
   }
-  if (d.form === "cylinder") {
-    const crossY = top + 2.6;
-    for (const [w, h] of [[5, 1.4], [1.4, 5]]) {
-      const s = add(new THREE.Mesh(style === "gummy" ? new RoundedBoxGeometry(w, h, 1.4, 2, 0.5) : new THREE.BoxGeometry(w, h, 1.4), accent));
-      s.position.y = crossY;
-    }
-    mark(crossY + 2.5);
-  }
   if (style === "industrial") {
     // Every industrial landmark gets its own smokestack.
     const off = d.form === "hub" ? 15 : 10, sh = Math.max(24, top * 0.7);
@@ -672,7 +667,7 @@ function buildHero(c: Ctx, d: District, pickables: THREE.Object3D[]): Hero {
   }
 
   // The district's signature feature, in this theme's language.
-  const foot = ({ stepped: 8, spire: 5, cylinder: 8, datacenter: 7, twist: 5, hub: 13 } as const)[d.form];
+  const foot = ({ stepped: 8, spire: 5, hospital: 9, datacenter: 7, twist: 5, library: 7, gallery: 8, observatory: 9, hub: 13 } as const)[d.form];
   top = addSignature(c, { d, g, top, accent, foot });
   }
 

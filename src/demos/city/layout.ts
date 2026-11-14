@@ -1,6 +1,6 @@
 /**
  * Landmark arrangements. The product hub always anchors the central plaza;
- * the other five districts are placed by pattern, scaled by `spread`, and
+ * the other districts are placed by pattern, scaled by `spread`, and
  * snapped to block centers (multiples of 20) so they sit inside a block.
  */
 import type { District } from "./links";
@@ -17,30 +17,30 @@ export const LAYOUTS: { id: Layout; name: string }[] = [
   { id: "random", name: "Random" },
 ];
 
-const BLOCK = 20, MIN_GAP = 40;
+const BLOCK = 20, MIN_GAP = 50;
 const snap = (v: number) => Math.round(v / BLOCK) * BLOCK;
 
 /** Place districts by pattern. `half` is the theme's city half-width. */
 export function arrange(base: District[], layout: Layout, spread: number, seed: number, half: number): District[] {
   const hub = base.find(d => d.form === "hub");
   const others = base.filter(d => d !== hub);
-  const R = 60 * spread, limit = half - BLOCK;
+  const R = 70 * spread, limit = half - BLOCK;
   let raw: [number, number][];
   switch (layout) {
     case "ring":
       raw = others.map((_, i) => polar(R, (i / others.length) * Math.PI * 2 + 0.35));
       break;
     case "grid": {
-      const s = 40 * spread;
-      raw = [[-s, -s], [0, -s], [s, -s], [-s, 0], [s, 0], [-s, s], [s, s]].slice(0, others.length) as [number, number][];
+      const s = 60 * spread;
+      raw = [[-s, -s], [0, -s], [s, -s], [-s, 0], [s, 0], [-s, s], [0, s], [s, s]].slice(0, others.length) as [number, number][];
       break;
     }
     case "arc":
       // A crescent behind the hub, as seen from the default camera.
-      raw = others.map((_, i) => polar(R * 1.1, Math.PI * 1.08 + (i / Math.max(1, others.length - 1)) * Math.PI * 0.84 - 0.45));
+      raw = others.map((_, i) => polar(R * 1.15, Math.PI * 0.95 + (i / Math.max(1, others.length - 1)) * Math.PI * 1.25 - 0.55));
       break;
     case "spiral":
-      raw = others.map((_, i) => polar(R * (0.6 + i * 0.24), i * 1.3 + 0.5));
+      raw = others.map((_, i) => polar(R * (0.7 + i * 0.13), i * 0.95 + 0.5));
       break;
     case "random": {
       const r = rng(seed * 7919 + 13);

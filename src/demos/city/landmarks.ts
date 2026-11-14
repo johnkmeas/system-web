@@ -9,6 +9,13 @@
  *  stone age   trading circle   signal tower      shaman's lodge   stone circle       hunters' camp      longhouse granary
  *  space       trade dome       comms array       med station      fusion reactor     launch complex     cargo hangar
  *
+ *              knowledge          media                   analytics
+ *  farm        grange library     county fair stage       weather station
+ *  medieval    scriptorium        playhouse               astronomer's tower
+ *  industrial  Carnegie library   picture palace          observatory
+ *  stone age   elders' cave       painted hides + totem   sun watchers' mound
+ *  space       data archive       holo theater            deep-space observatory
+ *
  * Every building carries the district color (the `accent` material, which
  * glows on hover) on a roof, sign, awning or band so it still reads as "that
  * district" from across the map.
@@ -265,6 +272,67 @@ class Landmark extends Builder {
         });
         break;
       }
+      case "knowledge": {
+        // Grange library: a one-room schoolhouse with a belfry, a reading porch and an open-book sign.
+        const w = this.walls(house, 37, red);
+        this.block(house, w, 12, 7, 15, 0, 0, -3);
+        this.gable(13, 5, 15.6, roofM, 0, 7, -3);
+        this.box(3, 3.2, 3, whiteM, 0, 10.4, -6);
+        this.ball(0.8, this.solid("#C8A040", { metal: 0.15 }), 0, 11.6, -6);
+        this.cone(2.6, 2.8, 4, accent, 0, 13.6, -6);
+        this.box(12.4, 0.4, 3.4, wood, 0, 0, 6.2);
+        for (const x of [-5.6, 5.6]) this.cyl(0.22, 0.22, 4.2, 8, whiteM, x, 0.4, 7.4);
+        this.gable(4, 1.6, 13, accent, 0, 4.6, 6.2, Math.PI / 2);
+        this.box(2.4, 3.6, 0.2, this.solid(this.t("#5A3A24", "#2A1C12")), 0, 0.4, 4.6);
+        for (const x of [-3.6, 3.6]) this.box(1.8, 2, 0.15, this.glow("#FFE2A0", this.c.night ? 1.4 : 0.15), x, 2.4, 4.6);
+        this.openBook(-8, 0, 9, 1.3, wood, whiteM);
+        // Reading table stacked with books, benches either side
+        this.box(5, 1.1, 2, wood, 6, 0, 10);
+        this.books(6, 1.1, 10, 7);
+        for (const z of [8.4, 11.6]) this.box(5, 0.6, 0.8, wood, 6, 0, z);
+        this.fence(-12, 13, 12, 13, whiteM, 1);
+        break;
+      }
+      case "media": {
+        // County fair stage: a quilt-painted barn studio and an open-air stage with hay-bale seats.
+        this.block(barn, this.walls(barn, 41, this.t("#E8E0D0", "#5E5A54")), 11, 8, 10, -8, 0, -4);
+        this.gambrel(11.8, 6, 10.8, roofM, -8, 8, -4);
+        const quilt = [accent, whiteM, this.solid("#C8402E"), whiteM, accent, whiteM, this.solid("#2E6AC8"), whiteM, accent];
+        quilt.forEach((m, i) => this.box(1.5, 1.5, 0.15, m, -9.5 + (i % 3) * 1.5, 3 + Math.floor(i / 3) * 1.5, 1.05));
+        // Easel with a canvas
+        for (const s of [-1, 1]) { const leg = this.part(new THREE.BoxGeometry(0.15, 4, 0.15), wood, -14 + s * 0.6, 2, 3); leg.rotation.z = s * 0.15; }
+        this.box(2.4, 1.8, 0.1, this.solid("#FFFFFF", { flat: false }), -14, 2.4, 3.15);
+        this.box(1.6, 1.1, 0.05, this.solid(this.s.d.color, { flat: false }), -14, 2.8, 3.22);
+        // Stage
+        const curtain = this.solid(this.t("#A0202A", "#4A1014"), { flat: false });
+        this.box(12, 1.2, 7, wood, 6, 0, -2);
+        this.box(12, 7, 0.4, curtain, 6, 1.2, -5.3);
+        for (const x of [0.4, 11.6]) this.box(1, 8, 1, accent, x, 0, 1.2);
+        this.box(13, 1.4, 1.2, accent, 6, 8, 1.2);
+        for (const x of [1.8, 10.2]) this.box(1.8, 6.6, 0.3, curtain, x, 1.2, 0.8);
+        for (const x of [3, 9]) { const spot = this.cyl(0.4, 0.6, 1, 10, this.solid("#2A2A30"), x, 7.2, 0.4); spot.rotation.x = 0.6; }
+        // Hay-bale seats and festoon lights
+        const hay = this.solid(this.t("#E2C25A", "#5A4E26"), { rough: 1 });
+        for (let row = 0; row < 3; row++) for (let k = 0; k < 4; k++) this.box(2.2, 1, 1.2, hay, 1.6 + k * 2.9, 0, 4.5 + row * 2.2);
+        this.festoon(-13, 13, 11, 5.2, 18);
+        break;
+      }
+      case "analytics": {
+        // Weather station: a silo crowned with a telescope dome, an anemometer and grain bins rising like a bar chart.
+        this.tower(barn, this.walls(barn, 45, this.t("#D8D0C0", "#5A564E")), 4.4, 14, -5, 0, -4, 20);
+        this.part(new THREE.TorusGeometry(4.5, 0.25, 6, 24), accent, -5, 14, -4).rotation.x = Math.PI / 2;
+        this.observatory(-5, 14.1, -4, 4.7, metal);
+        this.block(house, this.walls(house, 47, white), 7, 4.4, 6, -5, 0, 4);
+        this.gable(6.6, 2.4, 7.4, roofM, -5, 4.4, 4, Math.PI / 2);
+        [3, 5, 7.5, 10.5].forEach((h, i) => {
+          const x = 3 + i * 3.4;
+          this.cyl(1.5, 1.5, h, 16, metal, x, 0, 3);
+          this.cone(1.8, 1.3, 16, i === 3 ? accent : roofM, x, h, 3);
+          this.part(new THREE.TorusGeometry(1.53, 0.08, 6, 20), roofM, x, h * 0.5, 3).rotation.x = Math.PI / 2;
+        });
+        this.anemometer(10, 0, -6, 13, metal);
+        break;
+      }
       case "products": {
         // Storage barn: gambrel-roofed hay barn, silos, bales and crates of product.
         this.block(barn, this.walls(barn, 33, red), 20, 11, 15, -2, 0, -2);
@@ -415,6 +483,69 @@ class Landmark extends Builder {
         }
         break;
       }
+      case "knowledge": {
+        // Scriptorium: a stone library hall with tall lit windows, a round book tower and a great book on a lectern.
+        const w = this.walls(stone, 37, wallC);
+        this.block(stone, w, 16, 9, 9, -2, 0, -3);
+        this.gable(10.2, 5.5, 16.8, tile, -2, 9, -3, Math.PI / 2);
+        const lit = this.glow("#FFD88A", this.c.night ? 1.6 : 0.3);
+        for (let i = 0; i < 5; i++) {
+          const x = -8 + i * 3;
+          this.box(1.3, 4.2, 0.2, lit, x, 2.2, 1.56);
+          this.part(new THREE.CircleGeometry(0.65, 12, 0, Math.PI), lit, x, 6.4, 1.67);
+          if (i < 4) this.box(0.8, 6.5, 1.3, w, x + 1.5, 0, 2);
+        }
+        this.tower(stone, w, 3.4, 17, 8.5, 0, -4, 14);
+        this.cone(4.2, 6.5, 14, accent, 8.5, 17, -4);
+        this.flagAt(8.5, 23.5, -4, 4, this.s.d.color);
+        this.box(2.6, 3.4, 0.25, dark, 8.5, 0, -0.55);
+        this.box(0.6, 2.4, 0.6, timber, -2, 0, 7);
+        this.openBook(-2, 2.6, 7, 1.1, accent, plaster, -0.45);
+        this.box(4, 1.2, 1.6, wood, 5, 0, 7.5);
+        this.books(5, 1.2, 7.5, 6);
+        break;
+      }
+      case "media": {
+        // Playhouse: a round timber theater open to the sky, its stage under a painted canopy.
+        const n = 12, R = 9;
+        this.part(new THREE.CircleGeometry(R, 24), this.solid(this.t("#A89878", "#3E3628"), { rough: 1 }), 0, 0.05, 0).rotation.x = -Math.PI / 2;
+        for (let i = 0; i < n; i++) {
+          const a = (i / n) * Math.PI * 2 + Math.PI / n;
+          if (Math.abs(a - Math.PI / 2) < 0.3) continue; // entrance faces the camera
+          const seg = this.box(4.9, 7, 1.4, plaster, Math.cos(a) * R, 0, Math.sin(a) * R); seg.rotation.y = -a + Math.PI / 2;
+          const post = this.box(0.4, 7.2, 0.4, timber, Math.cos(a - Math.PI / n) * (R + 0.7), 0, Math.sin(a - Math.PI / n) * (R + 0.7));
+          post.rotation.y = -a;
+          for (const y of [3.4, 6.8]) { const b = this.box(4.9, 0.3, 0.2, timber, Math.cos(a) * (R + 0.72), y, Math.sin(a) * (R + 0.72)); b.rotation.y = -a + Math.PI / 2; }
+        }
+        const ring = this.part(new THREE.CylinderGeometry(R - 0.6, R + 1.6, 2.4, n, 1, true), this.solid(this.t("#B89A5A", "#4A3E24"), { rough: 1, side: THREE.DoubleSide }), 0, 8.2, 0);
+        ring.rotation.y = Math.PI / n;
+        this.box(3.6, 8.5, 1.6, plaster, 0, 0, R + 0.4);
+        this.gable(3, 1.8, 4.2, accent, 0, 8.5, R + 0.4, Math.PI / 2);
+        this.box(2, 4, 0.2, dark, 0, 0, R + 1.25);
+        // Stage, canopy and tiring house
+        this.box(8, 1.4, 4.4, wood, 0, 0, -5);
+        for (const x of [-2.6, 2.6]) this.cyl(0.3, 0.3, 5, 8, accent, x, 1.4, -3.4);
+        this.gable(7.4, 2.4, 4.6, accent, 0, 6.4, -5, Math.PI / 2);
+        this.block(blank, this.walls(blank, 43, wallC), 7, 11, 3, 0, 0, -8.4);
+        this.gable(4, 2.4, 7.6, tile, 0, 11, -8.4, Math.PI / 2);
+        this.flagAt(0, 13.4, -8.4, 5, this.s.d.color);
+        break;
+      }
+      case "analytics": {
+        // Astronomer's tower: a round tower with a turning dome and telescope, and a spinning armillary sphere.
+        const w = this.walls(stone, 45, wallC);
+        this.tower(stone, w, 4, 20, -3, 0, -3, 16);
+        this.part(new THREE.TorusGeometry(4.3, 0.4, 6, 24), w, -3, 20, -3).rotation.x = Math.PI / 2;
+        this.observatory(-3, 20.2, -3, 4.3, this.solid(this.t("#B8B0A0", "#4A463E")));
+        this.block(stone, w, 7, 6, 6, 5, 0, 1);
+        this.gable(6.6, 3, 7.4, tile, 5, 6, 1, Math.PI / 2);
+        // Star chart banner on the tower
+        const chart = this.box(2.4, 4, 0.1, this.solid("#1E2A4A"), -3, 9, 1.05);
+        for (let i = 0; i < 9; i++) this.ball(0.12, this.glow("#FFF2C8", 1.4), -3.9 + (i * 37 % 10) * 0.2, 9.6 + (i * 53 % 30) * 0.1, 1.15);
+        chart.castShadow = false;
+        this.armillary(6, 0, 8, accent, timber);
+        break;
+      }
       case "products": {
         // Castle keep: the treasury holds the catalog.
         const w = this.walls(stone, 29, wallC);
@@ -554,6 +685,68 @@ class Landmark extends Builder {
         this.ball(0.35, new THREE.MeshBasicMaterial({ color: "#5BFF8A" }), 8, 2.8, 9.8);
         break;
       }
+      case "knowledge": {
+        // Carnegie library: brick hall behind a stone portico, a domed reading room and lamp posts.
+        const w = this.walls(brick, 37, this.t("#9A5A44", "#523428"));
+        this.block(brick, w, 18, 9, 11, 0, 0, -3);
+        this.box(18.8, 0.9, 11.8, concrete, 0, 9, -3);
+        this.cyl(3.4, 3.4, 2.2, 20, concrete, 0, 9.9, -3);
+        const dm = this.part(dome(24), accent, 0, 12.1, -3); dm.scale.set(3.6, 3, 3.6);
+        this.cyl(0.2, 0.3, 1.6, 6, concrete, 0, 15, -3);
+        for (let i = 0; i < 3; i++) this.box(11 - i * 0.8, 0.5, 2.4 - i * 0.6, concrete, 0, i * 0.5, 4.8 - i * 0.3);
+        for (const x of [-4, -1.35, 1.35, 4]) this.cyl(0.5, 0.6, 7, 12, concrete, x, 1.5, 4.2);
+        this.box(10.4, 1, 2.2, concrete, 0, 8.5, 3.6);
+        const ped = this.part(new THREE.ConeGeometry(1, 1, 3), accent, 0, 10.3, 3.6); ped.scale.set(6.2, 1.6, 1.2);
+        const lit = this.glow("#FFD88A", this.c.night ? 1.4 : 0.2);
+        for (const x of [-7, -5.5, 5.5, 7]) { this.box(1.1, 4, 0.2, lit, x, 2.6, 2.56); this.part(new THREE.CircleGeometry(0.55, 12, 0, Math.PI), lit, x, 6.6, 2.67); }
+        for (const x of [-7.5, 7.5]) { this.cyl(0.12, 0.15, 4.4, 6, this.solid("#2A2A2E"), x, 0, 7.4); this.ball(0.5, this.glow("#FFE8B0", this.c.night ? 2 : 0.4), x, 4.6, 7.4); }
+        this.books(0, 1.5, 6.2, 6);
+        break;
+      }
+      case "media": {
+        // Picture palace: an art-deco cinema with a blade sign, a marquee of chasing bulbs and poster frames.
+        const w = this.walls(brick, 41, this.t("#7A4A3A", "#3E2620"));
+        this.block(brick, w, 14, 10, 13, 0, 0, -4);
+        this.box(16, 12, 1, concrete, 0, 0, 3);
+        this.box(10, 2, 1, concrete, 0, 12, 3);
+        this.box(5, 1.6, 1, concrete, 0, 14, 3);
+        this.box(0.9, 11, 3, accent, 0, 9, 4.9);
+        const bladePts: [number, number, number][] = [];
+        for (let i = 0; i < 12; i++) for (const z of [3.5, 6.3]) bladePts.push([0.5, 9.4 + i * 0.9, z]);
+        this.chase(bladePts);
+        this.box(13, 2.4, 3.6, accent, 0, 4.6, 5.3);
+        this.box(11.4, 1.3, 0.1, this.glow("#FFF6E0", this.c.night ? 1.2 : 0.3), 0, 5.1, 7.16);
+        const marquee: [number, number, number][] = [];
+        for (let i = 0; i < 16; i++) marquee.push([-6.2 + i * 0.83, 4.5, 7.2]);
+        this.chase(marquee);
+        this.box(6, 3.6, 0.2, this.solid("#1A2A3A", { metal: 0.3, rough: 0.2 }), 0, 0, 3.55);
+        ["#C8402E", "#2E6AC8", "#E8A030", "#3A8A4A"].forEach((col, i) => {
+          const x = [-6.4, -4.2, 4.2, 6.4][i];
+          this.box(1.8, 2.8, 0.2, this.solid("#C8A040", { metal: 0.3 }), x, 0.6, 3.55);
+          this.box(1.4, 2.3, 0.1, this.glow(col, this.c.night ? 0.9 : 0.15), x, 0.85, 3.7);
+        });
+        break;
+      }
+      case "analytics": {
+        // Observatory: a brick hall under a big turning dome, with a gauge tower and a sweeping searchlight.
+        const w = this.walls(brick, 45, this.t("#8C4A36", "#4A2A22"));
+        this.block(brick, w, 12, 8, 12, -3, 0, -3);
+        this.box(12.6, 0.7, 12.6, concrete, -3, 8, -3);
+        this.cyl(5.6, 5.6, 2.4, 24, concrete, -3, 8.7, -3);
+        this.observatory(-3, 11.1, -3, 5.8, this.solid(this.t("#E8ECF0", "#5A5E66"), { metal: 0.3, rough: 0.3, flat: false }));
+        this.block(metal, this.walls(metal, 47, this.t("#7A8088", "#3A3E44")), 5, 12, 5, 7.5, 0, 2);
+        const dial = new THREE.Group(); dial.position.set(7.5, 8.5, 4.6); this.root.add(dial);
+        this.part(new THREE.CylinderGeometry(1.8, 1.8, 0.3, 24).rotateX(Math.PI / 2), this.glow("#F4F0E0", this.c.night ? 0.8 : 0.1), 0, 0, 0, dial);
+        const needle = this.part(new THREE.BoxGeometry(0.15, 1.5, 0.1), accent, 0, 0.6, 0.25, new THREE.Group());
+        dial.add(needle.parent!);
+        this.on((_dt, t, r) => { needle.parent!.rotation.z = r ? 0 : Math.sin(t * 0.7) * 1.2; });
+        const light = new THREE.Group(); light.position.set(7.5, 12, 2); this.root.add(light);
+        this.cyl(0.8, 0.8, 1.2, 12, steel, 0, 0, 0, light);
+        const beam = this.part(new THREE.ConeGeometry(2.4, 26, 16, 1, true), this.holo(this.s.d.color, this.c.night ? 0.18 : 0.06), 0, 13.6, 0, new THREE.Group());
+        beam.castShadow = false; const tilt = beam.parent!; tilt.rotation.z = -0.5; light.add(tilt);
+        this.turn(light, "y", 0.5);
+        break;
+      }
       case "products": {
         // Distribution warehouse: big sawtooth hall, rooftop water tower, containers, conveyor and a forklift.
         const w = this.walls(metal, 33, this.t("#7A8088", "#3A3E44"));
@@ -687,6 +880,78 @@ class Landmark extends Builder {
         this.smoke(1, 2.5, 7);
         break;
       }
+      case "knowledge": {
+        // Elders' cave: a rock outcrop whose painted wall keeps the tribe's knowledge, with story stones and a fire.
+        const big = this.part(new THREE.DodecahedronGeometry(5, 0), rock, -3, 2.6, -6); big.scale.set(1.3, 0.85, 1);
+        this.part(new THREE.DodecahedronGeometry(3, 0), rock, -10, 1.4, -4);
+        this.part(new THREE.CircleGeometry(2.4, 16, 0, Math.PI), this.solid("#1A140E"), -3, 0.02, -1.2);
+        this.part(new THREE.CircleGeometry(1.8, 16, 0, Math.PI), this.glow("#FF9A3A", this.c.night ? 1.4 : 0.5), -3, 0.02, -1.25);
+        const wallR = this.box(8, 5.5, 0.8, rock, 6, 0, -2); wallR.rotation.y = -0.35;
+        const paint = ["#B8402A", "#E8A040", "#2A2420", this.s.d.color];
+        for (let i = 0; i < 7; i++) {
+          const m = this.part(new THREE.PlaneGeometry(1 + (i % 3) * 0.4, 0.7 + (i % 2) * 0.4), this.solid(paint[i % 4], { emissive: paint[i % 4], ei: this.c.night ? 0.5 : 0.05 }), 4.2 + i * 0.85, 1.4 + (i * 7 % 5) * 0.7, 0.52 + i * 0.3, wallR.parent!);
+          m.rotation.y = -0.35; m.castShadow = false;
+        }
+        for (let i = 0; i < 5; i++) {
+          const a = Math.PI * 0.15 + (i / 4) * Math.PI * 0.7, x = Math.cos(a) * 9, z = 6 + Math.sin(a) * 3;
+          const h = 3 + (i % 3) * 0.7;
+          this.box(1.3, h, 0.8, rock, x, 0, z).rotation.y = -a + Math.PI / 2;
+          this.box(1.36, 0.4, 0.86, accent, x, h * 0.65, z).rotation.y = -a + Math.PI / 2;
+        }
+        this.fire(-2, 0, 6, 1);
+        for (let i = 0; i < 4; i++) { const a = (i / 4) * Math.PI * 2 + 0.4; this.part(new THREE.CylinderGeometry(0.45, 0.45, 2.6, 8).rotateZ(Math.PI / 2), wood, -2 + Math.cos(a) * 3.4, 0.45, 6 + Math.sin(a) * 3.4).rotation.y = -a; }
+        break;
+      }
+      case "media": {
+        // Painted hides and a totem: the tribe's art, around a drum circle.
+        this.part(new THREE.CircleGeometry(10, 32), dirt, 0, 0.04, 0).rotation.x = -Math.PI / 2;
+        const totem = [this.s.d.color, "#B8402A", "#E8C060", "#3A6A4A", "#2A2420"];
+        for (let i = 0; i < 5; i++) {
+          const seg = this.cyl(1.1, 1.2, 2.4, 8, this.solid(totem[i]), 0, i * 2.4, -6);
+          for (const s of [-1, 1]) this.ball(0.25, this.solid("#F4EEDC"), s * 0.45, i * 2.4 + 1.5, -4.95);
+          seg.rotation.y = i * 0.2;
+        }
+        for (const s of [-1, 1]) { const wing = this.box(3.4, 0.8, 0.4, accent, s * 2.4, 9.4, -6); wing.rotation.z = s * 0.25; }
+        this.cone(1.4, 2, 6, accent, 0, 12, -6);
+        for (let i = 0; i < 4; i++) {
+          const a = Math.PI + 0.5 + (i / 3) * (Math.PI - 1), x = Math.cos(a) * 8, z = Math.sin(a) * 6 - 1;
+          const f = new THREE.Group(); f.position.set(x, 0, z); f.rotation.y = -a - Math.PI / 2; this.root.add(f);
+          for (const px of [-1.6, 1.6]) this.cyl(0.14, 0.16, 5, 5, wood, px, 0, 0, f);
+          for (const y of [1, 4.6]) this.box(3.6, 0.2, 0.2, wood, 0, y, 0, f);
+          const tex = this.paintedHide(i);
+          this.part(new THREE.PlaneGeometry(2.8, 3.2), new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide, roughness: 1 }), 0, 2.8, 0.05, f).castShadow = false;
+        }
+        const drums: THREE.Object3D[] = [];
+        for (let i = 0; i < 3; i++) {
+          const x = -3 + i * 3, z = 5 + (i % 2);
+          this.cyl(0.9, 0.7, 1.4, 12, this.solid(clay[i]), x, 0, z);
+          drums.push(this.cyl(0.92, 0.92, 0.1, 12, hide, x, 1.4, z));
+        }
+        this.on((_dt, t, r) => { drums.forEach((d, i) => { d.scale.y = r ? 1 : 1 + Math.max(0, Math.sin(t * 7 + i * 2)) ** 6 * 4; }); });
+        this.fire(0, 0, 1, 0.8);
+        break;
+      }
+      case "analytics": {
+        // Sun watchers' mound: a gnomon pole whose shadow sweeps a ring of marker stones, and a lookout platform.
+        const mound = this.part(new THREE.SphereGeometry(9, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2), this.solid(this.t("#7A8A4A", "#323A24"), { rough: 1 }), 0, 0, -1);
+        mound.scale.set(1, 0.32, 1);
+        this.cyl(0.35, 0.55, 13, 8, wood, 0, 2.6, -1);
+        this.cone(0.8, 1.6, 6, accent, 0, 15.6, -1);
+        for (let i = 0; i < 9; i++) {
+          const a = Math.PI * 0.1 + (i / 8) * Math.PI * 0.8, x = Math.cos(a) * 7.5, z = -1 + Math.sin(a) * 7.5;
+          this.box(0.9, 1.6 + (i === 4 ? 1.4 : (i % 2) * 0.5), 0.7, i === 4 ? accent : rock, x, 1.2 - Math.abs(Math.cos(a)) * 0.6, z).rotation.y = -a;
+        }
+        const shadow = new THREE.Group(); shadow.position.set(0, 2.95, -1); this.root.add(shadow);
+        const sm = this.part(new THREE.PlaneGeometry(0.6, 7), new THREE.MeshBasicMaterial({ color: "#1A1A12", transparent: true, opacity: 0.35, depthWrite: false }), 0, 0, 3.5, shadow);
+        sm.rotation.x = -Math.PI / 2; sm.castShadow = false;
+        this.on((_dt, t, r) => { shadow.rotation.y = r ? 0 : Math.sin(t * 0.2) * 1.1; });
+        const plat = new THREE.Group(); plat.position.set(-10, 0, -8); this.root.add(plat);
+        for (const [x, z] of [[-1.6, -1.6], [1.6, -1.6], [-1.6, 1.6], [1.6, 1.6]]) this.cyl(0.18, 0.22, 8, 5, wood, x, 0, z, plat);
+        this.box(4, 0.3, 4, wood, 0, 7, 0, plat);
+        this.cone(3.2, 2.4, 4, thatch, 0, 9.6, 0, plat);
+        for (let y = 1; y < 7; y += 1.1) this.box(1.2, 0.12, 0.12, wood, 0, y, 2.1, plat);
+        break;
+      }
       case "products": {
         // Longhouse granary: a long thatched hall with raised grain stores and heaps of clay pots.
         const w = this.walls(mud, 11, this.c.p.wall[1]);
@@ -808,6 +1073,70 @@ class Landmark extends Builder {
         lights(5.8, 0.4, 12);
         break;
       }
+      case "knowledge": {
+        // Data archive: a tower of glowing shelf discs in a glass sheath, data tiles spiraling around it.
+        this.cyl(7, 7.5, 1, 32, dark, 0, 0, 0);
+        this.part(new THREE.TorusGeometry(7.1, 0.25, 8, 48), accent, 0, 1, 0).rotation.x = Math.PI / 2;
+        this.cyl(2.2, 2.2, 22, 20, metal, 0, 1, 0);
+        for (let i = 0; i < 7; i++) {
+          const r = 5.2 - i * 0.35, y = 2.6 + i * 2.8;
+          this.cyl(r, r, 0.6, 32, i % 2 ? metal : dark, 0, y, 0);
+          this.part(new THREE.TorusGeometry(r, 0.12, 6, 40), new THREE.MeshBasicMaterial({ color: this.s.d.color }), 0, y + 0.3, 0).rotation.x = Math.PI / 2;
+        }
+        const sheath = this.cyl(5.7, 5.7, 21, 32, glass, 0, 1, 0); sheath.castShadow = false;
+        const helix = new THREE.Group(); this.root.add(helix);
+        for (let i = 0; i < 22; i++) {
+          const a = i * 0.6, tile = this.part(new THREE.PlaneGeometry(1.2, 1.6), holo, Math.cos(a) * 8, 3 + i * 0.9, Math.sin(a) * 8, helix);
+          tile.rotation.y = -a + Math.PI / 2; tile.castShadow = false;
+        }
+        this.spin(helix, 0.3);
+        const book = this.icon("book", holo, this.holo("#FFFFFF", 0.7)); book.position.y = 26; book.scale.setScalar(1.1); this.root.add(book); this.spin(book, 0.6);
+        break;
+      }
+      case "media": {
+        // Holo theater: tiered seating arcing round a big animated screen, a projector beam and a hologram on stage.
+        this.cyl(11, 11.5, 0.6, 40, dark, 0, 0, 0);
+        for (let tier = 0; tier < 4; tier++) {
+          const r = 4.5 + tier * 2, h = 0.7 * (tier + 1);
+          for (let k = 0; k < 9; k++) {
+            const a = Math.PI * 0.1 + (k / 8) * Math.PI * 0.8;
+            this.box(2.1, h, 1.8, tier % 2 ? metal : dark, Math.cos(a) * r, 0.6, Math.sin(a) * r).rotation.y = -a + Math.PI / 2;
+          }
+        }
+        this.box(17, 10, 0.7, dark, 0, 0.6, -7);
+        const tex = this.scrollTex((ctx, w, h) => {
+          const g = ctx.createLinearGradient(0, 0, w, 0);
+          ["#FF4FD8", "#3FF0FF", this.s.d.color, "#7A5AFF", "#FF4FD8"].forEach((c, i) => g.addColorStop(i / 4, c));
+          ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = "rgba(255,255,255,0.25)"; for (let y = 0; y < h; y += 8) ctx.fillRect(0, y, w, 2);
+        }, 256, 64);
+        this.part(new THREE.PlaneGeometry(15.6, 8.4), new THREE.MeshBasicMaterial({ map: tex }), 0, 5.8, -6.6).castShadow = false;
+        this.on((dt, _t, r) => { if (!r) tex.offset.x += dt * 0.1; });
+        const beam = this.part(new THREE.ConeGeometry(4.5, 15, 20, 1, true).rotateX(-Math.PI / 2), this.holo(this.s.d.color, 0.07), 0, 5.8, 1);
+        beam.castShadow = false;
+        this.cyl(0.8, 1, 1.4, 12, metal, 0, 4.6, 8.6);
+        const pal = this.icon("palette", holo, holo); pal.position.set(0, 4.5, -3.5); pal.scale.setScalar(0.8); this.root.add(pal); this.spin(pal, 0.7);
+        break;
+      }
+      case "analytics": {
+        // Deep-space observatory: a telescope dome, a tracking radio dish and a live holo chart.
+        this.cyl(10, 10.5, 0.8, 40, dark, 0, 0, 0);
+        lights(10.2, 0.85, 20);
+        this.cyl(4.8, 4.8, 4, 24, metal, -5, 0.8, -4);
+        this.observatory(-5, 4.8, -4, 4.8, metal);
+        const dish = new THREE.Group(); dish.position.set(4.5, 0.8, 1.5); this.root.add(dish);
+        this.cyl(1.4, 2, 6, 12, metal, 0, 0, 0, dish);
+        const tilt = new THREE.Group(); tilt.position.y = 7; dish.add(tilt);
+        // Cap around the sphere's bottom pole: concave side up, its lowest point at the pivot
+        this.part(new THREE.SphereGeometry(6, 28, 8, 0, Math.PI * 2, Math.PI - 0.62, 0.62), this.solid(this.t("#F0F4FA", "#5A6070"), { metal: 0.2, rough: 0.3, flat: false, side: THREE.DoubleSide }), 0, 6, 0, tilt);
+        this.part(new THREE.CylinderGeometry(0.1, 0.1, 3.6, 6), metal, 0, 1.8, 0, tilt);
+        this.ball(0.6, accent, 0, 3.8, 0, tilt);
+        tilt.rotation.x = -0.7;
+        this.on((dt, t, r) => { if (!r) { dish.rotation.y += dt * 0.15; tilt.rotation.x = -0.7 + Math.sin(t * 0.3) * 0.2; } });
+        const chart = this.icon("chart", holo, this.holo("#FFFFFF", 0.7)); chart.position.set(-5, 15, -4); chart.scale.setScalar(1.2); this.root.add(chart);
+        this.animateChart(chart, 1.4);
+        break;
+      }
       case "products": {
         // Cargo hangar: arched hangar open to the front, containers inside, cargo pods orbiting overhead.
         // Half cylinder lying along z, arching over the floor
@@ -828,6 +1157,99 @@ class Landmark extends Builder {
         break;
       }
     }
+  }
+
+  // ------------------------------------------------------------------ shared pieces for the new districts
+
+  /** Observatory dome with an open slit and a telescope; turns slowly. */
+  private observatory(x: number, y: number, z: number, r: number, shell: Mat) {
+    const g = new THREE.Group(); g.position.set(x, y, z); this.root.add(g);
+    this.part(new THREE.SphereGeometry(r, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), shell, 0, 0, 0, g);
+    const slit = this.solid("#14161E");
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * (Math.PI / 2);
+      const s = this.part(new THREE.BoxGeometry(r * 0.26, 0.2, r * 0.3), slit, 0, Math.sin(a) * r * 0.99, Math.cos(a) * r * 0.99, g);
+      s.rotation.x = -a;
+    }
+    const tube = this.part(new THREE.CylinderGeometry(r * 0.13, r * 0.17, r * 1.2, 12), this.s.accent, 0, r * 0.75, r * 0.45, g);
+    tube.rotation.x = 0.75;
+    this.part(new THREE.TorusGeometry(r, r * 0.04, 6, 32), this.s.accent, 0, 0.1, 0, g).rotation.x = Math.PI / 2;
+    this.on((_dt, t, rd) => { if (!rd) g.rotation.y = Math.sin(t * 0.25 + x) * 1.1; });
+    return g;
+  }
+  /** A row of book spines, base at y. */
+  private books(x: number, y: number, z: number, n: number) {
+    const cols = ["#C8402E", "#2E6AC8", "#E8A030", "#3A8A4A", this.s.d.color, "#7A4AC8"];
+    for (let i = 0; i < n; i++) {
+      const h = 0.9 + ((i * 7) % 4) * 0.15;
+      this.box(0.35, h, 0.9, this.solid(cols[i % cols.length]), x - (n - 1) * 0.2 + i * 0.4, y, z);
+    }
+  }
+  /** Big open book on a slant, as a sign or on a lectern. */
+  private openBook(x: number, y: number, z: number, s: number, cover: Mat, page: Mat, tilt = -0.3) {
+    const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.x = tilt; g.scale.setScalar(s); this.root.add(g);
+    if (y === 0) for (const px of [-1, 1]) this.box(0.2, 3, 0.2, cover, px, 0, 0, g);
+    const by = y === 0 ? 3 : 0;
+    for (const side of [-1, 1]) {
+      const leaf = new THREE.Group(); leaf.position.y = by; leaf.rotation.z = side * -0.2; g.add(leaf);
+      this.box(2.2, 0.15, 2.8, cover, side * 1.1, 0, 0, leaf);
+      this.box(2, 0.25, 2.6, page, side * 1.05, 0.15, 0, leaf);
+    }
+    return g;
+  }
+  /** Bulbs that chase along a path, like a theater sign. */
+  private chase(pts: [number, number, number][]) {
+    const mats = pts.map(([x, y, z]) => {
+      const m = new THREE.MeshBasicMaterial({ color: "#FFF4C8" });
+      this.part(new THREE.SphereGeometry(0.2, 8, 6), m, x, y, z).castShadow = false;
+      return m;
+    });
+    this.on((_dt, t, r) => { const k = r ? 0 : Math.floor(t * 8); mats.forEach((m, i) => m.color.set((i + k) % 3 === 0 ? "#FFF6D0" : "#8A6A2A")); });
+  }
+  /** String of glowing bulbs sagging between two points along x. */
+  private festoon(x0: number, x1: number, z: number, y: number, n: number) {
+    const bulb = this.glow("#FFE8A0", this.c.night ? 2.4 : 0.6);
+    for (const x of [x0, x1]) this.cyl(0.12, 0.14, y + 0.4, 6, this.solid("#4A3A2A"), x, 0, z);
+    for (let i = 0; i <= n; i++) {
+      const k = i / n, sag = Math.sin(k * Math.PI) * 1.4;
+      this.part(new THREE.SphereGeometry(0.22, 8, 6), bulb, x0 + (x1 - x0) * k, y - sag, z).castShadow = false;
+    }
+  }
+  /** Weather mast with spinning cups and a vane. */
+  private anemometer(x: number, y: number, z: number, h: number, mat: Mat) {
+    this.cyl(0.14, 0.2, h, 6, mat, x, y, z);
+    const cups = new THREE.Group(); cups.position.set(x, y + h, z); this.root.add(cups);
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2;
+      const arm = this.part(new THREE.BoxGeometry(1.6, 0.08, 0.08), mat, Math.cos(a) * 0.8, 0, Math.sin(a) * 0.8, cups); arm.rotation.y = -a;
+      this.ball(0.3, this.s.accent, Math.cos(a) * 1.6, 0, Math.sin(a) * 1.6, cups);
+    }
+    this.turn(cups, "y", 3);
+    const vane = new THREE.Group(); vane.position.set(x, y + h - 1.4, z); this.root.add(vane);
+    this.box(1.8, 0.06, 0.06, mat, 0, 0, 0, vane); this.cone(0.25, 0.6, 4, this.s.accent, 0.9, -0.3, 0, vane).rotation.z = -Math.PI / 2;
+    this.on((_dt, t, r) => { if (!r) vane.rotation.y = Math.sin(t * 0.4) * 0.8; });
+  }
+  /** Brass armillary sphere on a plinth, rings turning. */
+  private armillary(x: number, y: number, z: number, ring: Mat, base: Mat) {
+    this.cyl(0.8, 1, 2, 10, base, x, y, z);
+    const g = new THREE.Group(); g.position.set(x, y + 4.2, z); this.root.add(g);
+    const brass = this.solid("#C8A040", { metal: 0.4, rough: 0.35, flat: false });
+    const rings = [[2, ring], [1.8, brass], [1.6, brass]] as const;
+    rings.forEach(([r, m], i) => { const t = this.part(new THREE.TorusGeometry(r, 0.1, 6, 32), m, 0, 0, 0, g); t.rotation.set(i * 0.9, i * 0.6, i * 0.4); });
+    this.ball(0.45, this.glow("#FFD24A", this.c.night ? 1.6 : 0.4), 0, 0, 0, g);
+    this.cyl(0.06, 0.06, 2.4, 6, brass, 0, -2.4, 0, g);
+    this.turn(g, "y", 0.5);
+  }
+  /** A stretched hide painted with animals, spirals or a sun. */
+  private paintedHide(i: number) {
+    return this.scrollTex((ctx, w, h) => {
+      ctx.fillStyle = "#D8BC8A"; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = ctx.fillStyle = [this.s.d.color, "#8A2A1A", "#2A2018", "#C86A2A"][i % 4];
+      ctx.lineWidth = 5; ctx.lineCap = "round";
+      if (i % 3 === 0) { ctx.beginPath(); for (let a = 0; a < 18; a += 0.2) ctx.lineTo(w / 2 + Math.cos(a) * a * 2.4, h / 2 + Math.sin(a) * a * 2.4); ctx.stroke(); }
+      else if (i % 3 === 1) { ctx.beginPath(); ctx.arc(w / 2, h / 2, 14, 0, Math.PI * 2); ctx.fill(); for (let k = 0; k < 10; k++) { const a = (k / 10) * Math.PI * 2; ctx.beginPath(); ctx.moveTo(w / 2 + Math.cos(a) * 20, h / 2 + Math.sin(a) * 20); ctx.lineTo(w / 2 + Math.cos(a) * 30, h / 2 + Math.sin(a) * 30); ctx.stroke(); } }
+      else { ctx.beginPath(); ctx.ellipse(w / 2, h / 2, 22, 11, 0, 0, Math.PI * 2); ctx.fill(); for (const lx of [-14, -6, 6, 14]) { ctx.beginPath(); ctx.moveTo(w / 2 + lx, h / 2 + 6); ctx.lineTo(w / 2 + lx, h / 2 + 24); ctx.stroke(); } ctx.beginPath(); ctx.moveTo(w / 2 + 20, h / 2 - 4); ctx.lineTo(w / 2 + 30, h / 2 - 16); ctx.stroke(); }
+    }, 96, 112);
   }
 
   // ------------------------------------------------------------------ shared creatures

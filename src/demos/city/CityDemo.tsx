@@ -227,6 +227,46 @@ function DistrictPage({ district }: { district: District }) {
   );
 }
 
+/**
+ * The site's own favicon, fetched straight from that site (no third-party
+ * favicon service sees which tools you use). Falls back to the apex domain,
+ * then to a letter tile for placeholders, local URLs and sites without one.
+ */
+/** Sites whose icon isn't at /favicon.ico; each URL is the brand's own asset. */
+const BRAND_ICONS: [RegExp, string][] = [
+  [/(^|\.)notion\.so$/, "https://www.notion.so/images/favicon.ico"],
+  [/(^|\.)github(status)?\.com$/, "https://github.githubassets.com/favicons/favicon.svg"],
+  [/(^|\.)shopifystatus\.com$/, "https://cdn.shopify.com/static/shopify-favicon.png"],
+  [/^postmaster\.google\.com$/, "https://www.google.com/favicon.ico"],
+];
+
+function faviconCandidates(url: string): string[] {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== "https:" || /(^|\.)(example\.com|your-store\.myshopify\.com|your-org\.omniapp\.co)$/.test(u.hostname)) return [];
+    const parts = u.hostname.split(".");
+    const apex = parts.slice(-2).join(".");
+    const brand = BRAND_ICONS.find(([re]) => re.test(u.hostname));
+    const out = brand ? [brand[1]] : [`${u.origin}/favicon.ico`];
+    if (apex !== u.hostname) out.push(`https://${apex}/favicon.ico`, `https://www.${apex}/favicon.ico`);
+    return out;
+  } catch { return []; }
+}
+
+function Favicon({ url, letter }: { url: string; letter: string }) {
+  const candidates = useMemo(() => faviconCandidates(url), [url]);
+  const [i, setI] = useState(0);
+  const src = candidates[i];
+  return (
+    <span className={"cy-link-avatar" + (src ? " has-icon" : "")} aria-hidden="true">
+      {src
+        ? <img src={src} alt="" width={20} height={20} loading="lazy" referrerPolicy="no-referrer" decoding="async"
+            onError={() => setI(n => n + 1)} onLoad={e => { if (e.currentTarget.naturalWidth < 8) setI(n => n + 1); }} />
+        : letter}
+    </span>
+  );
+}
+
 function LinkRow({ link }: { link: CityLink }) {
   const [copied, setCopied] = useState(false);
   let host = link.url;
@@ -237,7 +277,7 @@ function LinkRow({ link }: { link: CityLink }) {
   return (
     <li className="cy-link">
       <a href={link.url} target="_blank" rel="noreferrer noopener">
-        <span className="cy-link-avatar" aria-hidden="true">{link.label[0]}</span>
+        <Favicon url={link.url} letter={link.label[0]} />
         <span className="cy-link-text">
           <span className="cy-link-label">
             {link.label}
