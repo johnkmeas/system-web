@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { OrbitDeck, PageTransition } from "./patterns";
 import { Home } from "./gallery/Home";
 import { ROUTES, useHashRoute } from "./gallery/routes";
@@ -11,8 +11,11 @@ import { SliderPlayground } from "./demos/SliderPlayground";
 import { SliderExamples } from "./demos/SliderExamples";
 import { StoreDemo } from "./demos/store/StoreDemo";
 import { PdpPlayground } from "./demos/pdp/PdpPlayground";
+// three.js is heavy: load the city only when its route opens.
+const CityDemo = lazy(() => import("./demos/city/CityDemo").then(m => ({ default: m.CityDemo })));
 
 const DEMOS: Partial<Record<string, () => ReactNode>> = {
+  city: () => <Suspense fallback={null}><CityDemo /></Suspense>,
   orbit: () => <OrbitDeck slides={slides} />,
   transitions: () => <TransitionsDemo />,
   store: () => <StoreDemo />,
@@ -26,7 +29,8 @@ const DEMOS: Partial<Record<string, () => ReactNode>> = {
 };
 
 export function App() {
-  const route = useHashRoute();
+  // Sub-paths (e.g. #/city/products/whey-isolate) stay on their demo's page.
+  const route = useHashRoute().split("/")[0];
   const demo = DEMOS[route];
   const key = demo ? route : "home";
 

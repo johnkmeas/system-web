@@ -23,6 +23,10 @@ Collections have 11–12 products each. They can be filtered (new, bestsellers, 
 
 Store content lives in `src/demos/store/niches.ts` and the motion layer in `src/demos/store/motion.tsx`.
 
+`#/city` is **Ops City**, a three.js city with mountains in the distance and a day/night toggle. Each landmark building opens a page of links for one domain of work: Storefront (Shopify admin, dev/staging/prod previews, Dev Dashboard, GitHub, Figma), Email (Iterable, Klaviyo, ZeroBounce, docs), Telehealth (Tellescope, OpenLoop), Backend (Vercel, Cloudflare) and Test (BrowserStack). The tallest tower is the **Product hub**: per-product admin metadata, image management (drag to reorder, alt text audit), metafields and metaobjects, a visualizer, PDFs and certificates of analysis. Every view has a deep link (e.g. `#/city/products/whey-isolate/coa`).
+- Links: `src/demos/city/links.ts`. Set `SHOP`, `THEMES`, `DOMAINS` and `GITHUB_ORG`; links still marked `todo: true` show a "needs URL" badge.
+- Product data: `src/demos/city/products.ts` is sample data shaped like the Admin API. Replace it with a server-side Admin GraphQL query for live data.
+
 ## Run
 
 ```sh
@@ -47,6 +51,7 @@ src/
     scramble/          # ScrambleText + useScramble
   gallery/             # gallery shell: hash router + home grid
   demos/               # one demo page per pattern, plus orbit deck content
+    city/              # Ops City: three.js scene, district link pages, product hub
   App.tsx              # routes, wrapped in a circle PageTransition
 orbit-deck.html        # original single-file prototype
 ```

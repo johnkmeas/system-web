@@ -8,6 +8,7 @@ export interface RouteInfo {
 }
 
 export const ROUTES: RouteInfo[] = [
+  { id: "city", title: "Ops City", color: "#B6F03C", blurb: "A 3D city where each landmark is a domain of work: storefront, email, telehealth, backend, test and a product hub with metafields, COAs and PDFs." },
   { id: "orbit", title: "Orbit deck", color: "#F4C95D", blurb: "Pages orbit a home nucleus and open with six orbital transitions: zoom, drawer, eclipse, slingshot, warp and collapse." },
   { id: "transitions", title: "Page transitions", color: "#F49AC1", blurb: "Eleven effects behind one component: circle, diamond, wipe, split, slide, stack, flip, zoom, blur, blinds, fade." },
   { id: "store", title: "Store flow", color: "#FF5A36", blurb: "A full storefront, home to product to cart, with real-world page transitions across three niches." },
