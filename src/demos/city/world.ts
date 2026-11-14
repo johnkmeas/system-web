@@ -120,6 +120,8 @@ export interface Ctx {
   districts: District[]; half: number;
   smokeEmitters: THREE.Vector3[];
   rand: () => number;
+  /** Share of filler blocks that get built, 0–1. */
+  density: number;
 }
 
 export function inst(c: Ctx, geo: THREE.BufferGeometry, mat: THREE.Material | THREE.Material[], items: { m: THREE.Matrix4; color?: THREE.ColorRepresentation }[], shadow = true) {
@@ -134,6 +136,8 @@ export function inst(c: Ctx, geo: THREE.BufferGeometry, mat: THREE.Material | TH
 
 export const pick = <T,>(r: () => number, xs: T[]) => xs[Math.floor(r() * xs.length)];
 
+const blockNoise = (x: number, z: number) => { const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453; return s - Math.floor(s); };
+
 /** City blocks available for filler, with distance info. */
 export function blocks(c: Ctx) {
   const out: { x: number; z: number; edge: number; near: boolean }[] = [];
@@ -141,6 +145,8 @@ export function blocks(c: Ctx) {
   const clear = LANDMARK_STYLES.has(c.style);
   for (let x = -c.half; x <= c.half; x += BLOCK) for (let z = -c.half; z <= c.half; z += BLOCK) {
     if (heroCells.has(`${x},${z}`)) continue;
+    // Thin the city out when density is turned down (stable per block, so it doesn't reshuffle).
+    if (c.density < 1 && blockNoise(x, z) > c.density) continue;
     if (Math.abs(x) <= 20 && Math.abs(z) <= 20) continue; // plaza
     // Landmark themes clear the blocks beside each landmark so it has its own grounds.
     if (clear && c.districts.some(d => Math.hypot(d.pos[0] - x, d.pos[1] - z) <= 21)) continue;
@@ -152,14 +158,14 @@ export function blocks(c: Ctx) {
 
 // ------------------------------------------------------------------ build
 
-export function buildWorld(style: CityStyle, theme: Theme, districts: District[]): World {
+export function buildWorld(style: CityStyle, theme: Theme, districts: District[], density = 1): World {
   const def = STYLES[style];
   const p = def.palette[theme];
   const night = theme === "night";
   const group = new THREE.Group();
   const c: Ctx = {
     style, p, night, kit: new Kit(style, p, night), group, updaters: [], districts, half: def.half,
-    smokeEmitters: [], rand: rng(42),
+    smokeEmitters: [], rand: rng(42), density,
   };
 
   buildGround(c);

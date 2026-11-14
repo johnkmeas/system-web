@@ -24,7 +24,7 @@ export interface StyleDef {
   swatch: string[];
   /** Render at 1/pixel resolution, upscaled with hard edges. */
   pixel?: number;
-  /** Half-width of the built-up area (world units). */
+  /** Half-width of the built-up area (world units). A multiple of 20 so blocks line up with the road grid. */
   half: number;
   palette: Record<Theme, Palette>;
 }
@@ -155,7 +155,7 @@ export const STYLES: Record<CityStyle, StyleDef> = {
     }),
   },
   space: {
-    id: "space", name: "Space city", blurb: "Domed habitats, a ringed planet", half: 150,
+    id: "space", name: "Space city", blurb: "Domed habitats, a ringed planet", half: 140,
     swatch: ["#05060F", "#7FD8FF", "#C8CED8", "#E8B070"],
     palette: mk({
       skyTop: "#020308", skyHorizon: "#141A36", skyBottom: "#04050C", sun: "#FFF4E0", fog: "#0A0E1E", fogNear: 420, fogFar: 1500,
@@ -173,7 +173,7 @@ export const STYLES: Record<CityStyle, StyleDef> = {
     }),
   },
   cyberpunk: {
-    id: "cyberpunk", name: "Cyberpunk", blurb: "Neon megatowers, rain, flying cars", half: 150,
+    id: "cyberpunk", name: "Cyberpunk", blurb: "Neon megatowers, rain, flying cars", half: 140,
     swatch: ["#0B0618", "#FF4FD8", "#3FF0FF", "#FFD84F"],
     palette: mk({
       skyTop: "#2A1A4A", skyHorizon: "#C86A9A", skyBottom: "#3A2A5A", sun: "#FFB0D8", fog: "#5A3A6A", fogNear: 160, fogFar: 1050,
@@ -191,7 +191,7 @@ export const STYLES: Record<CityStyle, StyleDef> = {
     }),
   },
   stoneage: {
-    id: "stoneage", name: "Stone age", blurb: "Huts, fire pits, deep forest", half: 110,
+    id: "stoneage", name: "Stone age", blurb: "Huts, fire pits, deep forest", half: 100,
     swatch: ["#6E5034", "#C8A050", "#3F6A34", "#FF8A2A"],
     palette: mk({
       skyTop: "#6AA0D8", skyHorizon: "#F2DCB0", skyBottom: "#D8DCD0", sun: "#FFE8B8", fog: "#C8D0B8", fogNear: 200, fogFar: 900,

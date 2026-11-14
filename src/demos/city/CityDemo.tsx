@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { CityScene, type CityStyle, type Theme } from "./scene";
-import { STYLE_LIST, STYLES } from "./styles";
+import { STYLES } from "./styles";
+import { arrange } from "./layout";
+import { fetchVancouverWeather, type LiveWeather } from "./weather";
+import { DEFAULT_SETTINGS, SettingsPanel, type CitySettings } from "./Settings";
 import { DISTRICTS, districtById, type CityLink, type District } from "./links";
 import { ProductHub } from "./ProductHub";
-import { CheckIcon, CloseIcon, ExternalIcon, MoonIcon, PaletteIcon, ResetIcon, SunIcon } from "./icons";
+import { CloseIcon, ExternalIcon, ResetIcon } from "./icons";
 import "./city.css";
 
 const go = (path: string) => { window.location.hash = "#/city" + (path ? "/" + path : ""); };
@@ -20,10 +23,19 @@ function useCityPath() {
   return parts;
 }
 
-const STYLE_KEY = "ops-city-style";
-function readStyle(): CityStyle {
-  try { const v = localStorage.getItem(STYLE_KEY); if (v && v in STYLES) return v as CityStyle; } catch { /* storage blocked */ }
-  return "lowpoly";
+const SETTINGS_KEY = "ops-city-settings";
+const STYLE_KEY = "ops-city-style"; // older key, still honored
+
+function readSettings(dark: boolean): CitySettings {
+  const s: CitySettings = { ...DEFAULT_SETTINGS, time: dark ? 1 : 0 };
+  try {
+    const old = localStorage.getItem(STYLE_KEY);
+    if (old && old in STYLES) s.style = old as CityStyle;
+    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? "null") as Partial<CitySettings> | null;
+    if (saved) Object.assign(s, saved);
+    if (!(s.style in STYLES)) s.style = "lowpoly";
+  } catch { /* storage blocked or bad JSON */ }
+  return s;
 }
 
 function useMedia(q: string) {
@@ -47,22 +59,36 @@ export function CityDemo() {
   const prefersDark = useMedia("(prefers-color-scheme: dark)");
   const reducedMotion = useMedia("(prefers-reduced-motion: reduce)");
   const narrow = useMedia("(max-width: 760px)");
-  const [themeChoice, setThemeChoice] = useState<Theme | null>(null);
-  const theme: Theme = themeChoice ?? (prefersDark ? "night" : "day");
   const [webgl, setWebgl] = useState(true);
-  const [style, setStyle] = useState<CityStyle>(readStyle);
-  const [picker, setPicker] = useState(false);
-  const chooseStyle = (s: CityStyle) => {
-    setStyle(s);
-    try { localStorage.setItem(STYLE_KEY, s); } catch { /* storage blocked */ }
-  };
+  const [settings, setSettings] = useState<CitySettings>(() => readSettings(prefersDark));
+  const set = (patch: Partial<CitySettings>) => setSettings(s => ({ ...s, ...patch }));
+  useEffect(() => {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); localStorage.setItem(STYLE_KEY, settings.style); } catch { /* storage blocked */ }
+  }, [settings]);
+  const { style, time, layout, seed, spread, density } = settings;
+  const theme: Theme = time >= 0.5 ? "night" : "day";
+  const districts = useMemo(() => arrange(DISTRICTS, layout, spread, seed, STYLES[style].half), [layout, spread, seed, style]);
+
+  // Live weather: fetch when switched on, refresh every 10 minutes.
+  const [live, setLive] = useState<LiveWeather | null>(null);
+  const [liveError, setLiveError] = useState(false);
+  useEffect(() => {
+    if (!settings.weather) return;
+    const ctl = new AbortController();
+    const load = () => fetchVancouverWeather(ctl.signal)
+      .then(w => { setLive(w); setLiveError(false); })
+      .catch(e => { if (!ctl.signal.aborted) { console.warn("Weather unavailable:", e); setLiveError(true); } });
+    load();
+    const id = setInterval(load, 10 * 60 * 1000);
+    return () => { ctl.abort(); clearInterval(id); };
+  }, [settings.weather]);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
     let scene: CityScene;
     try {
       scene = new CityScene(canvas, {
-        districts: DISTRICTS, style, theme, reducedMotion, labels,
+        districts, style, time, density, reducedMotion, labels,
         onHover: setHovered,
         onSelect: id => go(id),
       });
@@ -76,7 +102,15 @@ export function CityDemo() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { sceneRef.current?.setLook(style, theme); }, [style, theme]);
+  useEffect(() => { sceneRef.current?.setLook(style, time); }, [style, time]);
+  useEffect(() => { sceneRef.current?.setWeather(settings.weather ? live : null); }, [settings.weather, live]);
+  // Re-lay the city after sliders settle, not on every tick.
+  const firstCity = useRef(true);
+  useEffect(() => {
+    if (firstCity.current) { firstCity.current = false; return; }
+    const id = setTimeout(() => sceneRef.current?.setCity(districts, density), 220);
+    return () => clearTimeout(id);
+  }, [districts, density]);
 
   const wide = district?.id === "products";
   useEffect(() => {
@@ -91,11 +125,11 @@ export function CityDemo() {
   useEffect(() => {
     const on = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      if (picker) setPicker(false); else if (district) go("");
+      if (district) go(""); else if (settings.open) { set({ open: false }); document.querySelector<HTMLElement>(".cy-set-head")?.focus(); }
     };
     window.addEventListener("keydown", on);
     return () => window.removeEventListener("keydown", on);
-  }, [district, picker]);
+  }, [district, settings.open]);
 
   return (
     <div className={"cy-root is-" + theme + " look-" + style + (district ? " has-panel" : "") + (wide ? " has-wide" : "")}>
@@ -120,39 +154,12 @@ export function CityDemo() {
       <header className="cy-hud">
         <h1>Ops City</h1>
         <p>{narrow ? "Drag to orbit · pinch to zoom · tap a landmark" : "Drag to orbit · scroll to zoom · right-drag to pan · click a landmark"}</p>
+        {settings.weather && live && style !== "space" && <p className="cy-hud-wx">Vancouver · {Math.round(live.tempC)}°C · {live.label}</p>}
       </header>
       <div className="cy-tools">
-        <button className={"cy-tool" + (picker ? " is-open" : "")} onClick={() => setPicker(v => !v)}
-          aria-label={`Theme: ${STYLES[style].name}`} aria-expanded={picker} aria-controls="cy-themes">
-          <PaletteIcon />
-        </button>
-        <button className="cy-tool" onClick={() => setThemeChoice(theme === "day" ? "night" : "day")} aria-label={`Switch to ${theme === "day" ? "night" : "day"}`}>
-          {theme === "day" ? <MoonIcon /> : <SunIcon />}
-        </button>
+        <SettingsPanel s={settings} set={set} live={live} liveError={liveError} reducedMotion={reducedMotion} />
         <button className="cy-tool" onClick={() => { go(""); sceneRef.current?.resetView(); }} aria-label="Reset view"><ResetIcon /></button>
       </div>
-      <AnimatePresence>
-        {picker && (
-          <>
-            <div className="cy-scrim" onPointerDown={() => setPicker(false)} />
-            <motion.div id="cy-themes" className="cy-themes" role="group" aria-label="City theme"
-              initial={{ opacity: 0, y: -8, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.98 }}
-              transition={{ duration: reducedMotion ? 0 : 0.18, ease: [0.2, 0.7, 0.2, 1] }}>
-              <p className="cy-themes-title">Theme</p>
-              {STYLE_LIST.map(s => (
-                <button key={s.id} className={"cy-theme" + (s.id === style ? " is-active" : "")} aria-pressed={s.id === style}
-                  onClick={() => chooseStyle(s.id)}>
-                  <span className={"cy-theme-swatch is-" + s.id} aria-hidden="true">
-                    {s.swatch.map(col => <span key={col} style={{ background: col }} />)}
-                  </span>
-                  <span className="cy-theme-text"><strong>{s.name}</strong><small>{s.blurb}</small></span>
-                  {s.id === style && <CheckIcon />}
-                </button>
-              ))}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       <nav className="cy-dock" aria-label="Districts">
         {DISTRICTS.map(d => (

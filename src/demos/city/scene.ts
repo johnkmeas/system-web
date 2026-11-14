@@ -3,13 +3,17 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import type { District } from "./links";
 import { STYLES, type CityStyle, type Theme } from "./styles";
 import { buildWorld, type World } from "./world";
+import { WeatherFx, type WeatherState } from "./weather";
 
 export type { Theme, CityStyle };
 
 export interface CitySceneOptions {
   districts: District[];
   style: CityStyle;
-  theme: Theme;
+  /** Time of day: 0 = midday, 1 = night. */
+  time: number;
+  /** Share of filler blocks built, 0–1. */
+  density: number;
   reducedMotion: boolean;
   onHover: (id: string | null) => void;
   onSelect: (id: string) => void;
@@ -36,6 +40,11 @@ export class CityScene {
   private home = { pos: new THREE.Vector3(175, 78, 245), target: new THREE.Vector3(0, 22, -10) };
   private style: CityStyle;
   private theme: Theme;
+  private time: number;
+  private density: number;
+  private weather: WeatherState | null = null;
+  private fx = new WeatherFx();
+  private base = { hemi: 1, exposure: 1 };
   private swapTimer = 0;
 
   private sky: THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial>;
@@ -46,7 +55,9 @@ export class CityScene {
 
   constructor(private canvas: HTMLCanvasElement, private opts: CitySceneOptions) {
     this.style = opts.style;
-    this.theme = opts.theme;
+    this.time = opts.time;
+    this.theme = opts.time >= 0.5 ? "night" : "day";
+    this.density = opts.density;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -114,6 +125,7 @@ export class CityScene {
     this.sun.shadow.bias = -0.0005;
     this.sun.shadow.normalBias = 0.6;
     this.scene.add(this.sun, this.sun.target);
+    this.scene.add(this.fx.group);
 
     this.rebuild();
 
@@ -129,10 +141,32 @@ export class CityScene {
 
   // ---------------------------------------------------------------- look
 
-  /** Switch theme and/or day-night. The city fades out, rebuilds, fades back in. */
-  setLook(style: CityStyle, theme: Theme) {
-    if (style === this.style && theme === this.theme) return;
-    this.style = style; this.theme = theme;
+  /**
+   * Set the theme and time of day. Sky and light blend continuously with time;
+   * the city itself only rebuilds when the theme changes or time crosses dusk
+   * (that's when windows switch on).
+   */
+  setLook(style: CityStyle, time: number) {
+    const theme: Theme = time >= 0.5 ? "night" : "day";
+    const swap = style !== this.style || theme !== this.theme;
+    this.style = style; this.theme = theme; this.time = time;
+    if (swap) this.swap(); else this.applyAtmosphere();
+  }
+
+  /** New landmark positions and/or filler density. */
+  setCity(districts: District[], density: number) {
+    this.opts.districts = districts; this.density = density;
+    this.swap();
+  }
+
+  /** Live weather, or null for none. */
+  setWeather(w: WeatherState | null) {
+    this.weather = w;
+    this.applyAtmosphere();
+  }
+
+  /** Fade out, rebuild, fade back in. */
+  private swap() {
     clearTimeout(this.swapTimer);
     if (this.opts.reducedMotion) { this.rebuild(); return; }
     this.canvas.style.transition = "opacity .2s ease";
@@ -146,23 +180,53 @@ export class CityScene {
   private rebuild() {
     if (this.world) { this.scene.remove(this.world.group); this.world.dispose(); }
     this.hover(null);
-    const def = STYLES[this.style], p = def.palette[this.theme];
-    this.world = buildWorld(this.style, this.theme, this.opts.districts);
+    const def = STYLES[this.style];
+    this.world = buildWorld(this.style, this.theme, this.opts.districts, this.density);
     this.scene.add(this.world.group);
-
-    const u = this.sky.material.uniforms;
-    u.top.value.set(p.skyTop); u.horizon.value.set(p.skyHorizon); u.bottom.value.set(p.skyBottom); u.sunColor.value.set(p.sun);
-    u.bands.value = def.pixel ? 7 : 0;
-    const fog = this.scene.fog as THREE.Fog;
-    fog.color.set(p.fog); fog.near = p.fogNear; fog.far = p.fogFar;
-    this.hemi.color.set(p.hemiSky); this.hemi.groundColor.set(p.hemiGround); this.hemi.intensity = p.hemi;
-    this.sun.color.set(p.sunColor); this.sun.intensity = p.sunI;
-    this.stars.visible = p.stars;
+    this.sky.material.uniforms.bands.value = def.pixel ? 7 : 0;
     (this.stars.material as THREE.PointsMaterial).size = def.pixel ? 4 : 2.2;
     this.renderer.toneMapping = this.style === "gummy" || this.style === "8bit" ? THREE.NeutralToneMapping : THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = p.exposure;
     this.canvas.style.imageRendering = def.pixel ? "pixelated" : "";
+    this.applyAtmosphere();
     this.resize();
+  }
+
+  /** Sky, fog and light: day and night palettes blended by time, then weather on top. */
+  private applyAtmosphere() {
+    const def = STYLES[this.style], a = def.palette.day, b = def.palette.night, k = this.time;
+    const mix = (target: THREE.Color, x: string, y: string) => target.set(x).lerp(new THREE.Color(y), k);
+    const num = (x: number, y: number) => x + (y - x) * k;
+    const u = this.sky.material.uniforms;
+    mix(u.top.value, a.skyTop, b.skyTop); mix(u.horizon.value, a.skyHorizon, b.skyHorizon);
+    mix(u.bottom.value, a.skyBottom, b.skyBottom); mix(u.sunColor.value, a.sun, b.sun);
+    // A warm band on the horizon around dusk.
+    const dusk = Math.max(0, 1 - Math.abs(k - 0.5) / 0.28);
+    if (this.style !== "space") u.horizon.value.lerp(new THREE.Color("#FF8A50"), dusk * 0.35);
+    const fog = this.scene.fog as THREE.Fog;
+    mix(fog.color, a.fog, b.fog); fog.near = num(a.fogNear, b.fogNear); fog.far = num(a.fogFar, b.fogFar);
+    mix(this.hemi.color, a.hemiSky, b.hemiSky); mix(this.hemi.groundColor, a.hemiGround, b.hemiGround);
+    let hemi = num(a.hemi, b.hemi), sunI = num(a.sunI, b.sunI);
+    mix(this.sun.color, a.sunColor, b.sunColor);
+    let starA = num(a.stars ? 1 : 0, b.stars ? 1 : 0) * Math.min(1, Math.max(0, (k - 0.3) / 0.4) + (a.stars ? 1 : 0));
+
+    const w = this.style === "space" ? null : this.weather;
+    if (w) {
+      const grey = new THREE.Color(this.theme === "night" ? "#262A34" : "#A2A8B0");
+      const c = w.cloud * 0.75;
+      for (const col of [u.top.value, u.horizon.value, u.bottom.value] as THREE.Color[]) col.lerp(grey, c);
+      fog.color.lerp(grey, c * 0.8);
+      u.sunColor.value.multiplyScalar(1 - w.cloud * 0.85);
+      sunI *= 1 - w.cloud * 0.65; hemi *= 1 - w.cloud * 0.12; starA *= 1 - w.cloud;
+      if (w.kind === "fog") { fog.near = Math.min(fog.near * 0.4, 110); fog.far = Math.max(Math.min(fog.far * 0.55, 560), 460); fog.color.lerp(new THREE.Color(this.theme === "night" ? "#3A3E48" : "#C8CCD0"), 0.6); }
+      if (w.kind === "rain" || w.kind === "drizzle" || w.kind === "storm") { fog.near *= 0.7; fog.far *= 0.65; }
+      if (w.kind === "snow") { fog.far *= 0.6; fog.color.lerp(new THREE.Color("#E8ECF2"), this.theme === "night" ? 0.15 : 0.4); }
+    }
+    this.fx.set(w, this.theme === "night");
+    this.hemi.intensity = hemi; this.sun.intensity = sunI;
+    this.base.hemi = hemi; this.base.exposure = num(a.exposure, b.exposure);
+    this.renderer.toneMappingExposure = this.base.exposure;
+    const sm = this.stars.material as THREE.PointsMaterial;
+    sm.transparent = true; sm.opacity = starA; this.stars.visible = starA > 0.02;
   }
 
   // ---------------------------------------------------------------- camera
@@ -287,6 +351,9 @@ export class CityScene {
     }
 
     this.world.update(dt, t, reduced);
+    const flash = this.fx.update(dt, t, reduced);
+    this.hemi.intensity = this.base.hemi + flash * 3.5;
+    this.renderer.toneMappingExposure = this.base.exposure + flash * 0.5;
 
     for (const h of this.world.heroes) {
       const on = h.district.id === this.hovered ? 1 : 0;
@@ -327,6 +394,7 @@ export class CityScene {
     this.canvas.removeEventListener("pointerleave", this.onLeave);
     this.controls.dispose();
     this.world.dispose();
+    this.fx.dispose();
     this.sky.geometry.dispose(); this.sky.material.dispose();
     this.stars.geometry.dispose(); (this.stars.material as THREE.Material).dispose();
     this.renderer.dispose();
