@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { CityScene, type Theme } from "./scene";
+import { CityScene, type CityStyle, type Theme } from "./scene";
+import { STYLE_LIST, STYLES } from "./styles";
 import { DISTRICTS, districtById, type CityLink, type District } from "./links";
 import { ProductHub } from "./ProductHub";
-import { CloseIcon, ExternalIcon, MoonIcon, ResetIcon, SunIcon } from "./icons";
+import { CheckIcon, CloseIcon, ExternalIcon, MoonIcon, PaletteIcon, ResetIcon, SunIcon } from "./icons";
 import "./city.css";
 
 const go = (path: string) => { window.location.hash = "#/city" + (path ? "/" + path : ""); };
@@ -17,6 +18,12 @@ function useCityPath() {
     return () => window.removeEventListener("hashchange", on);
   }, []);
   return parts;
+}
+
+const STYLE_KEY = "ops-city-style";
+function readStyle(): CityStyle {
+  try { const v = localStorage.getItem(STYLE_KEY); if (v && v in STYLES) return v as CityStyle; } catch { /* storage blocked */ }
+  return "lowpoly";
 }
 
 function useMedia(q: string) {
@@ -43,13 +50,19 @@ export function CityDemo() {
   const [themeChoice, setThemeChoice] = useState<Theme | null>(null);
   const theme: Theme = themeChoice ?? (prefersDark ? "night" : "day");
   const [webgl, setWebgl] = useState(true);
+  const [style, setStyle] = useState<CityStyle>(readStyle);
+  const [picker, setPicker] = useState(false);
+  const chooseStyle = (s: CityStyle) => {
+    setStyle(s);
+    try { localStorage.setItem(STYLE_KEY, s); } catch { /* storage blocked */ }
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current!;
     let scene: CityScene;
     try {
       scene = new CityScene(canvas, {
-        districts: DISTRICTS, theme, reducedMotion, labels,
+        districts: DISTRICTS, style, theme, reducedMotion, labels,
         onHover: setHovered,
         onSelect: id => go(id),
       });
@@ -59,11 +72,11 @@ export function CityDemo() {
     }
     sceneRef.current = scene;
     return () => { scene.dispose(); sceneRef.current = null; };
-    // Scene is built once; theme and focus are pushed in by the effects below.
+    // Scene is built once; look and focus are pushed in by the effects below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { sceneRef.current?.setTheme(theme); }, [theme]);
+  useEffect(() => { sceneRef.current?.setLook(style, theme); }, [style, theme]);
 
   const wide = district?.id === "products";
   useEffect(() => {
@@ -76,13 +89,16 @@ export function CityDemo() {
   }, [district, narrow, wide]);
 
   useEffect(() => {
-    const on = (e: KeyboardEvent) => { if (e.key === "Escape" && district) go(""); };
+    const on = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (picker) setPicker(false); else if (district) go("");
+    };
     window.addEventListener("keydown", on);
     return () => window.removeEventListener("keydown", on);
-  }, [district]);
+  }, [district, picker]);
 
   return (
-    <div className={"cy-root is-" + theme + (district ? " has-panel" : "") + (wide ? " has-wide" : "")}>
+    <div className={"cy-root is-" + theme + " look-" + style + (district ? " has-panel" : "") + (wide ? " has-wide" : "")}>
       <canvas ref={canvasRef} className="cy-canvas" aria-label="3D city. Each landmark building opens a page of links." />
       {!webgl && <p className="cy-nogl">This view needs WebGL. Use the district list below.</p>}
 
@@ -106,11 +122,37 @@ export function CityDemo() {
         <p>{narrow ? "Drag to orbit · pinch to zoom · tap a landmark" : "Drag to orbit · scroll to zoom · right-drag to pan · click a landmark"}</p>
       </header>
       <div className="cy-tools">
+        <button className={"cy-tool" + (picker ? " is-open" : "")} onClick={() => setPicker(v => !v)}
+          aria-label={`Theme: ${STYLES[style].name}`} aria-expanded={picker} aria-controls="cy-themes">
+          <PaletteIcon />
+        </button>
         <button className="cy-tool" onClick={() => setThemeChoice(theme === "day" ? "night" : "day")} aria-label={`Switch to ${theme === "day" ? "night" : "day"}`}>
           {theme === "day" ? <MoonIcon /> : <SunIcon />}
         </button>
         <button className="cy-tool" onClick={() => { go(""); sceneRef.current?.resetView(); }} aria-label="Reset view"><ResetIcon /></button>
       </div>
+      <AnimatePresence>
+        {picker && (
+          <>
+            <div className="cy-scrim" onPointerDown={() => setPicker(false)} />
+            <motion.div id="cy-themes" className="cy-themes" role="group" aria-label="City theme"
+              initial={{ opacity: 0, y: -8, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -6, scale: 0.98 }}
+              transition={{ duration: reducedMotion ? 0 : 0.18, ease: [0.2, 0.7, 0.2, 1] }}>
+              <p className="cy-themes-title">Theme</p>
+              {STYLE_LIST.map(s => (
+                <button key={s.id} className={"cy-theme" + (s.id === style ? " is-active" : "")} aria-pressed={s.id === style}
+                  onClick={() => chooseStyle(s.id)}>
+                  <span className={"cy-theme-swatch is-" + s.id} aria-hidden="true">
+                    {s.swatch.map(col => <span key={col} style={{ background: col }} />)}
+                  </span>
+                  <span className="cy-theme-text"><strong>{s.name}</strong><small>{s.blurb}</small></span>
+                  {s.id === style && <CheckIcon />}
+                </button>
+              ))}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <nav className="cy-dock" aria-label="Districts">
         {DISTRICTS.map(d => (

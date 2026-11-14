@@ -50,6 +50,52 @@
 .cy-tool:hover { background: var(--p-surface); }
 .cy-tool:focus-visible, .cy-chip:focus-visible, .cy-label:focus-visible { outline: 2px solid var(--hud); outline-offset: 2px; }
 
+/* Theme picker */
+.cy-tool.is-open { background: var(--p-surface); box-shadow: 0 0 0 2px var(--hud); }
+.cy-scrim { position: absolute; inset: 0; z-index: 6; }
+.cy-themes {
+  position: absolute; z-index: 7; top: 66px; right: 16px; width: min(300px, calc(100vw - 32px));
+  padding: 8px; border-radius: 18px; display: grid; gap: 2px; transform-origin: top right;
+  color: var(--p-text); background: var(--p-bg); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  box-shadow: var(--p-shadow), 0 0 0 1px var(--p-line);
+}
+.cy-themes-title { margin: 4px 10px 6px; font-size: 11.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--p-muted); }
+.cy-theme {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 10px; border: 0; border-radius: 12px;
+  font: inherit; text-align: left; color: inherit; background: transparent; cursor: pointer;
+}
+.cy-theme:hover { background: var(--p-sunk); }
+.cy-theme.is-active { background: var(--p-surface); box-shadow: 0 0 0 1px var(--p-line); }
+.cy-theme:focus-visible { outline: 2px solid var(--p-text); outline-offset: -2px; }
+.cy-theme > svg { margin-left: auto; flex: none; }
+.cy-theme-swatch { flex: none; width: 40px; height: 40px; border-radius: 10px; overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.cy-theme-swatch.is-lowpoly { clip-path: polygon(50% 0, 100% 30%, 100% 100%, 0 100%, 0 30%); border-radius: 4px; }
+.cy-theme-swatch.is-8bit { border-radius: 0; image-rendering: pixelated; }
+.cy-theme-swatch.is-gummy { border-radius: 50%; box-shadow: inset 4px 5px 6px rgba(255,255,255,.55), inset -3px -4px 6px rgba(0,0,0,.18); }
+.cy-theme-swatch.is-medieval { border-radius: 4px 4px 14px 14px; }
+.cy-theme-swatch.is-industrial { border-radius: 3px; }
+.cy-theme-swatch.is-space { border-radius: 50%; box-shadow: 0 0 0 2px rgba(127,216,255,.5), inset 0 0 0 1px rgba(255,255,255,.15); }
+.cy-theme-swatch.is-cyberpunk { border-radius: 2px; box-shadow: 0 0 8px rgba(255,79,216,.55), inset 0 0 0 1px #3FF0FF; }
+.cy-theme-swatch.is-stoneage { border-radius: 46% 54% 40% 60% / 55% 45% 55% 45%; }
+.cy-theme-text { display: flex; flex-direction: column; min-width: 0; }
+.cy-theme-text strong { font-size: 14px; }
+.cy-theme-text small { font-size: 12px; color: var(--p-muted); }
+
+/* Labels follow the theme */
+.cy-root.look-8bit .cy-label, .cy-root.look-8bit .cy-hud, .cy-root.look-8bit .cy-chip { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.cy-root.look-8bit .cy-label { border-radius: 0; box-shadow: 0 0 0 2px var(--hud), inset 0 -3px 0 var(--c); }
+.cy-root.look-gummy .cy-label { border-radius: 999px; padding: 6px 16px 8px; box-shadow: 0 0 0 1px var(--p-line), inset 0 -3px 0 var(--c), inset 0 2px 0 rgba(255,255,255,.5); }
+.cy-root.look-medieval .cy-label-name, .cy-root.look-medieval .cy-hud h1 { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; letter-spacing: .01em; }
+.cy-root.look-medieval .cy-label { border-radius: 4px; }
+.cy-root.look-industrial .cy-label { border-radius: 3px; }
+.cy-root.look-industrial .cy-label-kicker { letter-spacing: .14em; }
+.cy-root.look-space .cy-label { border-radius: 999px; box-shadow: 0 0 0 1px rgba(127,216,255,.45), inset 0 -3px 0 var(--c); }
+.cy-root.look-space .cy-label-kicker { letter-spacing: .18em; }
+.cy-root.look-cyberpunk .cy-label { border-radius: 0; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); box-shadow: inset 0 0 0 1px var(--c), 0 0 14px var(--c); }
+.cy-root.look-cyberpunk .cy-label-name, .cy-root.look-cyberpunk .cy-label-kicker { font-family: ui-monospace, "SF Mono", Menlo, monospace; text-transform: uppercase; }
+.cy-root.look-stoneage .cy-label { border-radius: 18px 10px 16px 8px; }
+.cy-root.look-stoneage .cy-label-name { font-family: "Iowan Old Style", Palatino, Georgia, serif; }
+
 /* 3D-pinned labels */
 .cy-labels { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
 .cy-label {
